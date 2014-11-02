@@ -19,6 +19,11 @@ public class FxTransformer {
 	
 	private final ClassPool pool = ClassPool.getDefault();
 
+	/**
+	 * Transforms a traditional Java Bean into a JavaFX2 Bean.
+	 * @param bean a traditional java bean implementing the FXSerials interface.
+	 * @return a JavaFX2 Bean
+	 */
 	public <T> T transform(T bean) {
 		if( ! FxSerials.class.isAssignableFrom(bean.getClass()))
 			throw new IllegalArgumentException("bean must implement FxSerials");
