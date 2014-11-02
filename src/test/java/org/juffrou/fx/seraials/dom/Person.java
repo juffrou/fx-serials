@@ -1,6 +1,8 @@
 package org.juffrou.fx.seraials.dom;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.juffrou.fx.serials.FxSerials;
 
@@ -12,6 +14,8 @@ public class Person implements FxSerials {
 	private String name;
 	private String email;
 	private LocalDate dateOfBirth;
+	private Address address;
+	private Set<Contact> contacts;
 	
 	
 	public Integer getId() {
@@ -38,5 +42,21 @@ public class Person implements FxSerials {
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
 	}
-
+	public Address getAddress() {
+		return address;
+	}
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+	public Set<Contact> getContacts() {
+		return contacts;
+	}
+	public void setContacts(Set<Contact> contacts) {
+		this.contacts = contacts;
+	}
+	public void addContact(Contact contact) {
+		if(contacts == null)
+			contacts = new HashSet<Contact>();
+		contacts.add(contact);
+	}
 }

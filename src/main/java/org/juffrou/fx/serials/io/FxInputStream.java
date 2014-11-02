@@ -16,7 +16,14 @@ import javassist.NotFoundException;
 
 import org.juffrou.fx.serials.FxSerials;
 import org.juffrou.fx.serials.FxSerialsBean;
+import org.juffrou.fx.serials.error.FxSerialsBeanCreationException;
 
+/**
+ * Deserializes traditional Java Beans into JavaFX2 Beans.<br>
+ * The source Java Beans must implement FxSerials.
+ * 
+ * @author Carlos Martins
+ */
 public class FxInputStream extends ObjectInputStream {
 
 	private static final int HASH_STRING = -1808118735;
@@ -26,14 +33,20 @@ public class FxInputStream extends ObjectInputStream {
 	private static final int HASH_DOUBLE = 2052876273;
 	private static final int HASH_FLOAT = 67973692;
 	
-	private ClassPool pool = ClassPool.getDefault();
+	private final ClassPool pool;
 
-	public FxInputStream() throws IOException, SecurityException {
+	protected FxInputStream() throws IOException, SecurityException {
 		super();
+		pool = ClassPool.getDefault();
 	}
 
 	public FxInputStream(InputStream in) throws IOException {
+		this(in, ClassPool.getDefault());
+	}
+
+	public FxInputStream(InputStream in, ClassPool pool) throws IOException {
 		super(in);
+		this.pool = pool;
 	}
 
 	@Override
@@ -57,18 +70,45 @@ public class FxInputStream extends ObjectInputStream {
 	        CtField field = new CtField(CtClass.longType, "serialVersionUID", ctClass);
 	        field.setModifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL);
 	        ctClass.addField(field, svUID + "L");
+	        // add initialized properties map
+	        CtClass hashMapClass = pool.get("java.util.HashMap");
+	        CtField fxProperties = new CtField(hashMapClass, "fxProperties", ctClass);
+//	        CtField fxProperties = CtField.make("private final java.util.Map fxProperties = new java.util.HashMap();", ctClass);
+	        ctClass.addField(fxProperties, CtField.Initializer.byNew(hashMapClass));
+	        // add constructor
+//	        CtConstructor ctConstructor = new CtConstructor(new CtClass[]{}, ctClass);
+//	        ctConstructor.setBody("this.fxProperties = new java.util.HashMap();");
+//	        ctClass.addConstructor(ctConstructor);
+	        // implement FxSerialsBean
+	        CtMethod getPropertyMethod = CtNewMethod.make(
+	        		"public javafx.beans.property.adapter.ReadOnlyJavaBeanProperty getProperty(String propertyName) {"
+			+"try {"+
+				"java.lang.reflect.Method m = getClass().getMethod(propertyName + \"Property\", null);"+
+//				"System.out.println(\"calling method: \"+m);"+
+				"javafx.beans.property.adapter.ReadOnlyJavaBeanProperty p = (javafx.beans.property.adapter.ReadOnlyJavaBeanProperty) m.invoke(this, null);"+
+				"return p;"+
+			"} catch (NoSuchMethodException e) {"+
+				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (NoSuchMethod): \" + e.getMessage(), e);"+
+			"} catch (SecurityException e) {"+
+				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (SecurityException): \" + e.getMessage(), e);"+
+			"} catch (IllegalAccessException e) {"+
+				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (IllegalAccess): \" + e.getMessage(), e);"+
+			"} catch (IllegalArgumentException e) {"+
+				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (IllegalArgument): \" + e.getMessage(), e);"+
+			"} catch (java.lang.reflect.InvocationTargetException e) {"+
+				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (InvocationTargetException): \" + e.getMessage(), e);"+
+			"} }"
+	        , ctClass);
+	        ctClass.addMethod(getPropertyMethod);
+	        ctClass.addInterface(pool.get("org.juffrou.fx.serials.FxSerialsBean"));
+	        // extend FxSerials
 	        ctClass.setSuperclass(pool.get(fxSerials.getName()));
 	        addPropertyMethods(ctClass);
 			Class<?> resolveClass = ctClass.toClass();
 			return resolveClass;
-		} catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CannotCompileException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (NotFoundException | CannotCompileException e) {
+			throw new FxSerialsBeanCreationException("Error creating FxSerialsBean for class "+fxSerials.getName()+ ": "+e.getMessage(), e);
 		}
-		return null;
 		
 	}
 	
@@ -80,9 +120,19 @@ public class FxInputStream extends ObjectInputStream {
 				continue;
 			FXInfo info = getFXInfo(ctField);
 			String name = ctField.getName();
-			CtMethod m = CtNewMethod.make(
-	                 "public " + info.returnType + " " + name + "Property() throws java.lang.NoSuchMethodException { return "+info.builder+".create().bean(this).name(\""+name+"\").build(); }",
-	                 ctClass);
+			String methodBody =
+					"public " + info.returnType + " " + name + "Property() {"+
+//							"System.out.println(\"Entered method\");"+
+//					        "if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();"+
+//							"System.out.println(\"fxProperties size=\");"+
+							info.returnType + " p = ("+info.returnType+") this.fxProperties.get(\""+name+"\");"+
+							"if(p == null) { try {"+
+							"p = "+info.builder+".create().bean(this).name(\""+name+"\").build();"+
+							"this.fxProperties.put(\""+name+"\", p);"+
+							"} catch (NoSuchMethodException e) {throw new org.juffrou.fx.serials.error.FxPropertyCreationException(\"Error creating FxProperty for bean property + "+name+"\", e);}"+
+							"} return p; }";
+//			System.out.println(methodBody);
+			CtMethod m = CtNewMethod.make(methodBody, ctClass);
 			ctClass.addMethod(m);
 		}
 	}
