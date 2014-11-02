@@ -16,6 +16,7 @@ import javassist.NotFoundException;
 
 import org.juffrou.fx.serials.FxSerials;
 import org.juffrou.fx.serials.FxSerialsBean;
+import org.juffrou.fx.serials.error.FxSerialsBeanAlreadExistsException;
 import org.juffrou.fx.serials.error.FxSerialsBeanCreationException;
 
 /**
@@ -54,18 +55,25 @@ public class FxInputStream extends ObjectInputStream {
 		
 		Class<?> resolveClass = super.resolveClass(desc);
 		if( FxSerials.class.isAssignableFrom(resolveClass) && ! FxSerialsBean.class.isAssignableFrom(resolveClass) )
-			resolveClass = buildFXSerialsBean(resolveClass, desc.getSerialVersionUID());
+			try {
+				resolveClass = buildFXSerialsBean(resolveClass, desc.getSerialVersionUID());
+			} catch (FxSerialsBeanAlreadExistsException e) { }
 		return resolveClass;
 	}
 	
-	private Class<?> buildFXSerialsBean(Class<?> fxSerials, long svUID) {
+	private Class<?> buildFXSerialsBean(Class<?> fxSerials, long svUID) throws FxSerialsBeanAlreadExistsException {
 
 		try {
 			String name = fxSerials.getName();
 			int i = name.lastIndexOf('.');
 			String pck = (i == -1 ? "fx_." : name.substring(0, i) + "._fx_.");
 			name = name.substring(i + 1);
-			CtClass ctClass = pool.makeClass(pck + name);
+			CtClass ctClass = null;
+			try {
+				ctClass = pool.makeClass(pck + name);
+			} catch(RuntimeException e) {
+				throw new FxSerialsBeanAlreadExistsException();
+			}
 	        // add the same serialVersionUID as the base class
 	        CtField field = new CtField(CtClass.longType, "serialVersionUID", ctClass);
 	        field.setModifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL);

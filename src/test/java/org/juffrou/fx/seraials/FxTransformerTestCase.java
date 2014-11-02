@@ -29,5 +29,7 @@ public class FxTransformerTestCase {
 
 		Person personFx = transformer.transform(person);
 		
+		transformer.transform(personFx);
+		
 	}
 }

@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import javassist.ClassPool;
 
 import org.juffrou.fx.serials.FxSerials;
+import org.juffrou.fx.serials.FxSerialsBean;
 import org.juffrou.fx.serials.error.FxTransformerException;
 
 /**
@@ -27,6 +28,8 @@ public class FxTransformer {
 	public <T> T transform(T bean) {
 		if( ! FxSerials.class.isAssignableFrom(bean.getClass()))
 			throw new IllegalArgumentException("bean must implement FxSerials");
+		if( ! FxSerialsBean.class.isAssignableFrom(bean.getClass()))
+			return bean;
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ObjectOutputStream out = new ObjectOutputStream(bos);

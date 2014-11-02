@@ -35,3 +35,17 @@ Transforming example:
 	
 	Person personFx = transformer.transform(person);
 ```
+
+In both cases, the personFx object returned extends Person, implements the FxSerialsBean interface and contains the following property method for the name property: 
+
+```java
+
+	public JavaBeanStringProperty nameProperty() {...}
+```
+
+Property methods may be accessed through introspection, but the FxSerialsBean interface defines a method which allows you to obtain any property:
+
+```java
+
+	public ReadOnlyJavaBeanProperty getProperty(String propertyName);
+```
