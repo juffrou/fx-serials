@@ -1,9 +1,10 @@
 package org.juffrou.fx.seraials.dom;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Person implements Serializable {
+import org.juffrou.fx.serials.FxSerials;
+
+public class Person implements FxSerials {
 	
 	private static final long serialVersionUID = 6329998877045393661L;
 

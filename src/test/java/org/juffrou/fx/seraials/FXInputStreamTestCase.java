@@ -9,14 +9,14 @@ import java.time.LocalDate;
 import java.util.Date;
 
 import org.juffrou.fx.seraials.dom.Person;
-import org.juffrou.fx.serials.io.FXInputStream;
+import org.juffrou.fx.serials.io.FxInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class FXInputStreamTestCase {
 	
-	FXInputStream fxInputStream = null;
+	FxInputStream fxInputStream = null;
 	FileInputStream fileIn = null;
 	
 	private void writePerson() throws IOException {
@@ -37,7 +37,7 @@ public class FXInputStreamTestCase {
 		try {
 			writePerson();
 			fileIn = new FileInputStream("person.ser");
-			fxInputStream = new FXInputStream(fileIn);
+			fxInputStream = new FxInputStream(fileIn);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
