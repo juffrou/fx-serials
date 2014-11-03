@@ -1,9 +1,34 @@
-fx-serials
-==========
+Juffrou FXSerials
+=================
+
+_Automagical JavaFX2 Beans_
+
+Copyright (C) 2014- by Carlos Martins, All rights reserved.
 
 Transforms traditional Java Beans into JavaFX2 Beans by adding property methods which return the appropriate JavaFX property type.
 
-JavaFX2 Beans cann be obtained by two ways:
+Given a traditional java bean like the following:
+
+```java
+	
+	package example.fxseraials
+
+	public class Person implements FxSerials {
+	
+		private static final long serialVersionUID = 6329998877045393661L;
+
+		private String name;
+	
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+	}
+```
+
+Its corresponding JavaFX2 Bean can be obtained by using one of two different methods:
 
 - Deserializing an object stream containing traditional Java Beans
 - Explicitly transforming one traditional Java Bean
@@ -36,16 +61,42 @@ Transforming example:
 	Person personFx = transformer.transform(person);
 ```
 
-In both cases, the personFx object returned extends Person, implements the FxSerialsBean interface and contains the following property method for the name property: 
+In both cases, the personFx object returned extends Person and implements the FxSerialsBean interface. This is what its code would look like:
 
 ```java
 
-	public JavaBeanStringProperty nameProperty() {...}
+	package example.fxseraials._fx_
+
+	public class Person extends example.fxseraials.Person implements FxSerialsBean {
+	
+		private static final long serialVersionUID = 6329998877045393661L;
+		
+		private Map<String, JavaBeanStringProperty> __fx_properties = new HashMap<String, JavaBeanStringProperty>();
+
+		public ReadOnlyJavaBeanProperty getProperty(String propertyName) {
+			Method m = getClass().getMethod(propertyName + "Property", null);
+			return (ReadOnlyJavaBeanProperty) m.invoke(this, null);
+		}
+		
+		public JavaBeanStringProperty nameProperty() {
+		javafx.beans.property.adapter.JavaBeanStringProperty p = (javafx.beans.property.adapter.JavaBeanStringProperty) __fx_properties.get("name");
+		if (p == null) {
+			p = javafx.beans.property.adapter.JavaBeanStringPropertyBuilder	.create().bean(this).name("name").build();
+			__fx_properties.put("name", p);
+		}
+		return p;
+		}
+	}
+
 ```
 
-Property methods may be accessed through introspection, but the FxSerialsBean interface defines a method which allows you to obtain any property:
+This class is not instantiated by you, so you can only access the method `nameProperty` through introspection. The good news in that the implemented `FxSerialsBean` interface defines a method which allows you to obtain any property:
 
 ```java
 
 	public ReadOnlyJavaBeanProperty getProperty(String propertyName);
 ```
+
+Note: FXSerials uses [Javassist version 3](https://github.com/jboss-javassist/javassist "Javassist on Github")
+
+This software is distributed under the Apache License Version 2.0.
