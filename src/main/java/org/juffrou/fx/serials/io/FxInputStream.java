@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -15,7 +18,6 @@ import javassist.CtNewMethod;
 import javassist.NotFoundException;
 
 import org.juffrou.fx.serials.FxSerials;
-import org.juffrou.fx.serials.FxSerialsBean;
 import org.juffrou.fx.serials.error.FxSerialsBeanAlreadExistsException;
 import org.juffrou.fx.serials.error.FxSerialsBeanCreationException;
 
@@ -54,16 +56,91 @@ public class FxInputStream extends ObjectInputStream {
 	protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException,	ClassNotFoundException {
 		
 		Class<?> resolveClass = super.resolveClass(desc);
-		if( FxSerials.class.isAssignableFrom(resolveClass) && ! FxSerialsBean.class.isAssignableFrom(resolveClass) )
+		if( implementsFxSerials(resolveClass) )
 			try {
 				resolveClass = buildFXSerialsBean(resolveClass, desc.getSerialVersionUID());
 			} catch (FxSerialsBeanAlreadExistsException e) { }
 		return resolveClass;
 	}
 	
+	/**
+	 * Test if a class declares to implement the interface FxSerials
+	 * 
+	 * @param clazz
+	 *            class to test
+	 * @return true if the class declares FxSerials implementation
+	 */
+	private boolean implementsFxSerials(Class<?> clazz) {
+		for (Class<?> itf : clazz.getInterfaces())
+			if (itf == FxSerials.class)
+				return true;
+		return false;
+	}
+	
+	/**
+	 * Collects information about bean property fields declared in the class and its super classes
+	 * @param fields
+	 * @param clazz
+	 */
+	private void collectFieldInfo(List<FieldInfo> fields, Class<?> clazz) {
+		Class<?> superclass = clazz.getSuperclass();
+		if (superclass != Object.class) {
+			collectFieldInfo(fields, superclass);
+		}
+		for (Field f : clazz.getDeclaredFields()) {
+			if(!Modifier.isStatic(f.getModifiers()) && !Modifier.isTransient(f.getModifiers())) {
+				FieldInfo fieldInfo = new FieldInfo();
+				fieldInfo.field = f;
+				Class<?> type = f.getType();
+				String simpleName = type.getSimpleName();
+				if(type.isPrimitive()) {
+					if(simpleName.equals("int"))
+						simpleName = "Integer";
+					else
+						simpleName = Character.valueOf((char) (simpleName.charAt(0) - 32)) + simpleName.substring(1);
+				}
+				
+				switch(simpleName.hashCode()) {
+				case HASH_STRING:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanStringProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanStringPropertyBuilder";
+					break;
+				case HASH_INTEGER:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanIntegerProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder";
+					break;
+				case HASH_LONG:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanLongProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanLongPropertyBuilder";
+					break;
+				case HASH_BOOLEAN:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanBooleanProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanBooleanPropertyBuilder";
+					break;
+				case HASH_DOUBLE:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanDoubleProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanDoublePropertyBuilder";
+					break;
+				case HASH_FLOAT:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanFloatProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanFloatPropertyBuilder";
+					break;
+				default:
+					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanObjectProperty";
+					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder";
+				}
+				
+				
+				fields.add(fieldInfo);
+			}
+		}
+	}
+
 	private Class<?> buildFXSerialsBean(Class<?> fxSerials, long svUID) throws FxSerialsBeanAlreadExistsException {
 
 		try {
+			List<FieldInfo> fields = new ArrayList<FieldInfo>();
+			collectFieldInfo(fields, fxSerials);
 			String name = fxSerials.getName();
 			int i = name.lastIndexOf('.');
 			String pck = (i == -1 ? "fx_." : name.substring(0, i) + "._fx_.");
@@ -111,7 +188,7 @@ public class FxInputStream extends ObjectInputStream {
 	        ctClass.addInterface(pool.get("org.juffrou.fx.serials.FxSerialsBean"));
 	        // extend FxSerials
 	        ctClass.setSuperclass(pool.get(fxSerials.getName()));
-	        addPropertyMethods(ctClass);
+	        addPropertyMethods(ctClass, fields);
 			Class<?> resolveClass = ctClass.toClass();
 			return resolveClass;
 		} catch (NotFoundException | CannotCompileException e) {
@@ -120,22 +197,17 @@ public class FxInputStream extends ObjectInputStream {
 		
 	}
 	
-	private void addPropertyMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
-		CtClass superclass = ctClass.getSuperclass();
-		CtField[] declaredFields = superclass.getDeclaredFields();
-		for (CtField ctField : declaredFields) {
-			if((ctField.getModifiers() & Modifier.STATIC) == Modifier.STATIC)
-				continue;
-			FXInfo info = getFXInfo(ctField);
-			String name = ctField.getName();
+	private void addPropertyMethods(CtClass ctClass, List<FieldInfo> fields) throws NotFoundException, CannotCompileException {
+		for (FieldInfo fieldInfo : fields) {
+			String name = fieldInfo.field.getName();
 			String methodBody =
-					"public " + info.returnType + " " + name + "Property() {"+
+					"public " + fieldInfo.returnType + " " + name + "Property() {"+
 //							"System.out.println(\"Entered method\");"+
-//					        "if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();"+
+					        "if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();"+
 //							"System.out.println(\"fxProperties size=\");"+
-							info.returnType + " p = ("+info.returnType+") this.fxProperties.get(\""+name+"\");"+
+							fieldInfo.returnType + " p = ("+fieldInfo.returnType+") this.fxProperties.get(\""+name+"\");"+
 							"if(p == null) { try {"+
-							"p = "+info.builder+".create().bean(this).name(\""+name+"\").build();"+
+							"p = "+fieldInfo.builder+".create().bean(this).name(\""+name+"\").build();"+
 							"this.fxProperties.put(\""+name+"\", p);"+
 							"} catch (NoSuchMethodException e) {throw new org.juffrou.fx.serials.error.FxPropertyCreationException(\"Error creating FxProperty for bean property + "+name+"\", e);}"+
 							"} return p; }";
@@ -145,51 +217,8 @@ public class FxInputStream extends ObjectInputStream {
 		}
 	}
 	
-	private FXInfo getFXInfo(CtField ctField) throws NotFoundException {
-		FXInfo info = new FXInfo();
-		CtClass type = ctField.getType();
-		String simpleName = type.getSimpleName();
-		if(type.isPrimitive()) {
-			if(simpleName.equals("int"))
-				simpleName = "Integer";
-			else
-				simpleName = Character.valueOf((char) (simpleName.charAt(0) - 32)) + simpleName.substring(1);
-		}
-		
-		switch(simpleName.hashCode()) {
-		case HASH_STRING:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanStringProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanStringPropertyBuilder";
-			break;
-		case HASH_INTEGER:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanIntegerProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder";
-			break;
-		case HASH_LONG:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanLongProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanLongPropertyBuilder";
-			break;
-		case HASH_BOOLEAN:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanBooleanProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanBooleanPropertyBuilder";
-			break;
-		case HASH_DOUBLE:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanDoubleProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanDoublePropertyBuilder";
-			break;
-		case HASH_FLOAT:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanFloatProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanFloatPropertyBuilder";
-			break;
-		default:
-			info.returnType = "javafx.beans.property.adapter.JavaBeanObjectProperty";
-			info.builder = "javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder";
-		}
-
-		return info;
-	}
-	
-	private class FXInfo {
+	private class FieldInfo {
+		public Field field;
 		public String returnType;
 		public String builder;
 	}

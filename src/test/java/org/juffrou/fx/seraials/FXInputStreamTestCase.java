@@ -28,8 +28,8 @@ public class FXInputStreamTestCase {
 	
 	private void writePerson() throws IOException {
 		Person person = new Person();
-		person.setName("Reyan Ali");
-		person.setEmail("Phokka Kuan, Ambehta Peer");
+		person.setName("Carlos Martins");
+		person.setEmail("carlos@martins.net");
 		person.setDateOfBirth(LocalDate.of(1967, 10, 1));
 		Address address = new Address();
 		address.setStreet("My Street");
