@@ -12,15 +12,15 @@ import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.ConcreteObject;
 import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
-import org.juffrou.fx.serials.FxSerialsBean;
-import org.juffrou.fx.serials.io.FxTransformer;
+import org.juffrou.fx.serials.FxSerialsProxy;
+import org.juffrou.fx.serials.FxSerialsUtil;
 import org.junit.Test;
 
 public class FxTransformerTestCase {
 
 	@Test
 	public void testFxTransformer() {
-		FxTransformer transformer = new FxTransformer();
+		FxSerialsUtil transformer = new FxSerialsUtil();
 		
 		Person person = new Person();
 		person.setName("Carlos Martins");
@@ -35,9 +35,9 @@ public class FxTransformerTestCase {
 		phone.setValue("918 333 222");
 		person.addContact(phone);
 
-		Person personFx = transformer.transform(person);
+		Person personFx = transformer.getProxy(person);
 		
-		transformer.transform(personFx);
+		transformer.getProxy(personFx);
 		
 	}
 	
@@ -46,13 +46,13 @@ public class FxTransformerTestCase {
 		ConcreteObject o = new ConcreteObject();
 		o.setName("My Object");
 		
-		FxTransformer transformer = new FxTransformer();
+		FxSerialsUtil transformer = new FxSerialsUtil();
 
-		ConcreteObject oFx = transformer.transform(o);
+		ConcreteObject oFx = transformer.getProxy(o);
 		
-		assertTrue(FxSerialsBean.class.isAssignableFrom(oFx.getClass()));
+		assertTrue(FxSerialsProxy.class.isAssignableFrom(oFx.getClass()));
 		
-		FxSerialsBean oFxBean = (FxSerialsBean)oFx;
+		FxSerialsProxy oFxBean = (FxSerialsProxy)oFx;
 		
 		JavaBeanStringProperty property = (JavaBeanStringProperty) oFxBean.getProperty("name");
 		

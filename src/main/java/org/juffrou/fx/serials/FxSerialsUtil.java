@@ -1,34 +1,33 @@
-package org.juffrou.fx.serials.io;
+package org.juffrou.fx.serials;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import javassist.ClassPool;
-
-import org.juffrou.fx.serials.FxSerials;
-import org.juffrou.fx.serials.FxSerialsBean;
+import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.FxTransformerException;
+import org.juffrou.fx.serials.io.FxInputStream;
 
 /**
  * Transforms a traditional Java Bean into a JavaFX2 Bean.
  * 
  * @author Carlos Martins
  */
-public class FxTransformer {
+public class FxSerialsUtil {
 	
-	private final ClassPool pool = ClassPool.getDefault();
+	private final FxSerialsProxyBuilder proxyBuilder = new FxSerialsProxyBuilder();
+
 
 	/**
 	 * Transforms a traditional Java Bean into a JavaFX2 Bean.
 	 * @param bean a traditional java bean implementing the FXSerials interface.
 	 * @return a JavaFX2 Bean
 	 */
-	public <T> T transform(T bean) {
+	public <T> T getProxy(T bean) {
 		if( ! FxSerials.class.isAssignableFrom(bean.getClass()))
 			throw new IllegalArgumentException("bean must implement FxSerials");
-		if( FxSerialsBean.class.isAssignableFrom(bean.getClass()))
+		if( FxSerialsProxy.class.isAssignableFrom(bean.getClass()))
 			return bean;
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -37,7 +36,7 @@ public class FxTransformer {
 			out.flush();
 			out.close();
 			
-			FxInputStream fxInputStream = new FxInputStream(new ByteArrayInputStream(bos.toByteArray()), pool);
+			FxInputStream fxInputStream = new FxInputStream(new ByteArrayInputStream(bos.toByteArray()), proxyBuilder);
 			return (T) fxInputStream.readObject();
 			
 		} catch (IOException | ClassNotFoundException e) {

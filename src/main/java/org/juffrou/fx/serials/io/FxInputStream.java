@@ -4,63 +4,45 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.NotFoundException;
 
 import org.juffrou.fx.serials.FxSerials;
-import org.juffrou.fx.serials.error.FxSerialsBeanAlreadExistsException;
-import org.juffrou.fx.serials.error.FxSerialsBeanCreationException;
+import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
+import org.juffrou.fx.serials.error.FxSerialsProxyAlreadExistsException;
 
 /**
  * Deserializes traditional Java Beans into JavaFX2 Beans.<br>
- * The source Java Beans must implement FxSerials.
+ * The source Java Beans must declare implementation of the FxSerials interface.
  * 
  * @author Carlos Martins
  */
 public class FxInputStream extends ObjectInputStream {
 
-	private static final int HASH_STRING = -1808118735;
-	private static final int HASH_INTEGER = -672261858;
-	private static final int HASH_LONG = 2374300;
-	private static final int HASH_BOOLEAN = 1729365000;
-	private static final int HASH_DOUBLE = 2052876273;
-	private static final int HASH_FLOAT = 67973692;
-	
-	private final ClassPool pool;
+	private final FxSerialsProxyBuilder proxyBuilder;
 
 	protected FxInputStream() throws IOException, SecurityException {
 		super();
-		pool = ClassPool.getDefault();
+		this.proxyBuilder = new FxSerialsProxyBuilder();
 	}
 
 	public FxInputStream(InputStream in) throws IOException {
-		this(in, ClassPool.getDefault());
+		this(in, new FxSerialsProxyBuilder());
 	}
 
-	public FxInputStream(InputStream in, ClassPool pool) throws IOException {
+	public FxInputStream(InputStream in, FxSerialsProxyBuilder proxyBuilder) throws IOException {
 		super(in);
-		this.pool = pool;
+		this.proxyBuilder = proxyBuilder;
 	}
 
 	@Override
 	protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException,	ClassNotFoundException {
 		
 		Class<?> resolveClass = super.resolveClass(desc);
+		
 		if( implementsFxSerials(resolveClass) )
 			try {
-				resolveClass = buildFXSerialsBean(resolveClass, desc.getSerialVersionUID());
-			} catch (FxSerialsBeanAlreadExistsException e) { }
+				resolveClass = proxyBuilder.buildFXSerialsProxy(resolveClass, desc.getSerialVersionUID());
+			} catch (FxSerialsProxyAlreadExistsException e) { }
+		
 		return resolveClass;
 	}
 	
@@ -76,275 +58,6 @@ public class FxInputStream extends ObjectInputStream {
 			if (itf == FxSerials.class)
 				return true;
 		return false;
-	}
-	
-	/**
-	 * Collects information about bean property fields declared in the class and its super classes
-	 * @param fields
-	 * @param clazz
-	 */
-	private void collectFieldInfo(List<FieldInfo> fields, Class<?> clazz) {
-		Class<?> superclass = clazz.getSuperclass();
-		if (superclass != Object.class) {
-			collectFieldInfo(fields, superclass);
-		}
-		for (Field f : clazz.getDeclaredFields()) {
-			if(!Modifier.isStatic(f.getModifiers()) && !Modifier.isTransient(f.getModifiers())) {
-				Class<?> type = f.getType();
-				
-				String getter = inspectReadMethod(clazz, f.getName(), type);
-				String setter = inspectWriteMethod(clazz, f.getName(), type);
-				
-				if(getter == null)
-					continue; // A property with no getter is ignored
-
-				FieldInfo fieldInfo = new FieldInfo();
-				fieldInfo.field = f;
-				fieldInfo.getter = getter;
-				fieldInfo.setter = setter;
-
-				String simpleName = type.getSimpleName();
-				if(type.isPrimitive()) {
-					if(simpleName.equals("int"))
-						simpleName = "Integer";
-					else
-						simpleName = Character.valueOf((char) (simpleName.charAt(0) - 32)) + simpleName.substring(1);
-				}
-				
-				switch(simpleName.hashCode()) {
-				case HASH_STRING:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanStringProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanStringPropertyBuilder";
-					}
-					else {
-						// property is readonly
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanStringProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanStringPropertyBuilder";
-					}
-					break;
-				case HASH_INTEGER:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanIntegerProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder";
-					}
-					else {
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanIntegerProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanIntegerPropertyBuilder";
-					}
-					break;
-				case HASH_LONG:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanLongProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanLongPropertyBuilder";
-					}
-					else {
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanLongProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanLongPropertyBuilder";
-					}
-					break;
-				case HASH_BOOLEAN:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanBooleanProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanBooleanPropertyBuilder";
-					}
-					else {
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder";
-					}
-					break;
-				case HASH_DOUBLE:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanDoubleProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanDoublePropertyBuilder";
-					}
-					else {
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanDoubleProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanDoublePropertyBuilder";
-					}
-					break;
-				case HASH_FLOAT:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanFloatProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanFloatPropertyBuilder";
-					}
-					else {
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanFloatProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanFloatPropertyBuilder";
-					}
-					break;
-				default:
-					if(setter != null) {
-						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanObjectProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder";
-					}
-					else {
-						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanObjectProperty";
-						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanObjectPropertyBuilder";
-					}
-				}
-				
-				
-				fields.add(fieldInfo);
-			}
-		}
-	}
-
-	public static String inspectReadMethod(Class<?> beanClass, String fieldName, Class<?> fieldClass) {
-		Method getterMethod;
-		String name = fieldName;
-		String methodName = "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
-		try {
-			getterMethod = beanClass.getMethod(methodName, null);
-			return getterMethod.getName();
-		} catch (NoSuchMethodException e) {
-			
-			// try the boolean "is" pattern
-			if(fieldClass == boolean.class || fieldClass == null) {
-				if(name.startsWith("is"))
-					name = name.substring(2);
-				methodName = "is" + name.substring(0, 1).toUpperCase() + name.substring(1);
-				try {
-					getterMethod = beanClass.getMethod(methodName, null);
-					return getterMethod.getName();
-				} catch (NoSuchMethodException e1) {
-					return null;
-				}
-			}
-			else
-				return null;
-
-		}
-	}
-
-	public static String inspectWriteMethod(Class<?> beanClass, String fieldName, Class<?> fieldClass) {
-		String name = fieldName;
-		String methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
-		try {
-
-			return beanClass.getMethod(methodName, fieldClass).getName();
-
-		} catch (NoSuchMethodException e) {
-			
-			// try the boolean "is" pattern
-			if(fieldClass == boolean.class) {
-				if(name.startsWith("is"))
-					name = name.substring(2);
-				methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
-				try {
-					return beanClass.getMethod(methodName, fieldClass).getName();
-				} catch (NoSuchMethodException e1) {
-					return null;
-				}
-			}
-			else
-				return null;
-		}
-	}
-
-	private Class<?> buildFXSerialsBean(Class<?> fxSerials, long svUID) throws FxSerialsBeanAlreadExistsException {
-
-		try {
-			List<FieldInfo> fields = new ArrayList<FieldInfo>();
-			collectFieldInfo(fields, fxSerials);
-			String name = fxSerials.getName();
-			int i = name.lastIndexOf('.');
-			String pck = (i == -1 ? "fx_." : name.substring(0, i) + "._fx_.");
-			name = name.substring(i + 1);
-			CtClass ctClass = null;
-			try {
-				ctClass = pool.makeClass(pck + name);
-			} catch(RuntimeException e) {
-				throw new FxSerialsBeanAlreadExistsException();
-			}
-	        // add the same serialVersionUID as the base class
-	        CtField field = new CtField(CtClass.longType, "serialVersionUID", ctClass);
-	        field.setModifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL);
-	        ctClass.addField(field, svUID + "L");
-	        // add initialized properties map
-	        CtClass hashMapClass = pool.get("java.util.HashMap");
-	        CtField fxProperties = new CtField(hashMapClass, "fxProperties", ctClass);
-//	        CtField fxProperties = CtField.make("private final java.util.Map fxProperties = new java.util.HashMap();", ctClass);
-	        ctClass.addField(fxProperties, CtField.Initializer.byNew(hashMapClass));
-	        // add constructor
-//	        CtConstructor ctConstructor = new CtConstructor(new CtClass[]{}, ctClass);
-//	        ctConstructor.setBody("this.fxProperties = new java.util.HashMap();");
-//	        ctClass.addConstructor(ctConstructor);
-	        // implement FxSerialsBean
-	        CtMethod getPropertyMethod = CtNewMethod.make(
-	        		"public javafx.beans.property.adapter.ReadOnlyJavaBeanProperty getProperty(String propertyName) {"
-			+"try {"+
-				"java.lang.reflect.Method m = getClass().getMethod(propertyName + \"Property\", null);"+
-//				"System.out.println(\"calling method: \"+m);"+
-				"javafx.beans.property.adapter.ReadOnlyJavaBeanProperty p = (javafx.beans.property.adapter.ReadOnlyJavaBeanProperty) m.invoke(this, null);"+
-				"return p;"+
-			"} catch (NoSuchMethodException e) {"+
-				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (NoSuchMethod): \" + e.getMessage(), e);"+
-			"} catch (SecurityException e) {"+
-				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (SecurityException): \" + e.getMessage(), e);"+
-			"} catch (IllegalAccessException e) {"+
-				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (IllegalAccess): \" + e.getMessage(), e);"+
-			"} catch (IllegalArgumentException e) {"+
-				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (IllegalArgument): \" + e.getMessage(), e);"+
-			"} catch (java.lang.reflect.InvocationTargetException e) {"+
-				"throw new org.juffrou.fx.serials.error.PropertyMethodException(\"Error invoking \"+propertyName+\"Property method (InvocationTargetException): \" + e.getMessage(), e);"+
-			"} }"
-	        , ctClass);
-	        ctClass.addMethod(getPropertyMethod);
-	        ctClass.addInterface(pool.get("org.juffrou.fx.serials.FxSerialsBean"));
-	        // extend FxSerials
-	        ctClass.setSuperclass(pool.get(fxSerials.getName()));
-	        addPropertyMethods(ctClass, fields);
-			Class<?> resolveClass = ctClass.toClass();
-			return resolveClass;
-		} catch (NotFoundException | CannotCompileException e) {
-			throw new FxSerialsBeanCreationException("Error creating FxSerialsBean for class "+fxSerials.getName()+ ": "+e.getMessage(), e);
-		}
-		
-	}
-	
-	private void addPropertyMethods(CtClass ctClass, List<FieldInfo> fields) throws NotFoundException, CannotCompileException {
-		for (FieldInfo fieldInfo : fields) {
-			
-			// build property method
-			String name = fieldInfo.field.getName();
-			StringBuilder methodBody = new StringBuilder();
-			methodBody.append("public " + fieldInfo.returnType + " " + name + "Property() {");
-//			methodBody.append("System.out.println(\"Entered method\");");
-			methodBody.append("if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();");
-//			methodBody.append("System.out.println(\"fxProperties size=\");");
-			methodBody.append(fieldInfo.returnType + " p = ("+fieldInfo.returnType+") this.fxProperties.get(\""+name+"\");");
-			methodBody.append("if(p == null) { try {");
-			methodBody.append("p = "+fieldInfo.builder+".create().bean(this).name(\""+name+"\").getter(\""+fieldInfo.getter+"\")");
-			if(fieldInfo.setter != null)
-				methodBody.append(".setter(\""+fieldInfo.setter+"\")");
-			methodBody.append(".build();");
-			methodBody.append("this.fxProperties.put(\""+name+"\", p);");
-			methodBody.append("} catch (NoSuchMethodException e) {throw new org.juffrou.fx.serials.error.FxPropertyCreationException(\"Error creating FxProperty for bean property + "+name+"\", e);}");
-			methodBody.append("} return p; }");
-//			System.out.println(methodBody);
-			CtMethod m = CtNewMethod.make(methodBody.toString(), ctClass);
-			ctClass.addMethod(m);
-			
-			if(fieldInfo.setter != null) {
-				// override setter method
-				methodBody.setLength(0);
-				methodBody.append("public void " + fieldInfo.setter+ "(" + fieldInfo.field.getType().getName() + " value) {");
-				methodBody.append("super." + fieldInfo.setter + "(value);");
-				methodBody.append(name + "Property().fireValueChangedEvent();");
-				methodBody.append("}");
-				m = CtNewMethod.make(methodBody.toString(), ctClass);
-				ctClass.addMethod(m);
-			}
-		}
-	}
-	
-	private class FieldInfo {
-		public Field field;
-		public String getter;
-		public String setter;
-		public String returnType;
-		public String builder;
 	}
 }
 

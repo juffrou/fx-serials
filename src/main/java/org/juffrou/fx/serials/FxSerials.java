@@ -3,7 +3,7 @@ package org.juffrou.fx.serials;
 import java.io.Serializable;
 
 /**
- * A Java Bean which can be extended automatically into a JavaFX Bean when de-serialized by FxInputStream
+ * Traditional Java Beans which directly implement this interface may be transformed into FxSerialProxy objects.
  * 
  * @author Carlos Martins
  */

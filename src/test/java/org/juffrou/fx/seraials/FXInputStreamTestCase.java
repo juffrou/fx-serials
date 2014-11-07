@@ -15,7 +15,7 @@ import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
 import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
-import org.juffrou.fx.serials.FxSerialsBean;
+import org.juffrou.fx.serials.FxSerialsProxy;
 import org.juffrou.fx.serials.io.FxInputStream;
 import org.junit.After;
 import org.junit.Before;
@@ -77,8 +77,8 @@ public class FXInputStreamTestCase {
 		try {
 			Person person = (Person) fxInputStream.readObject();
 			System.out.println("Received a " + person.getClass().getName());
-			assertTrue(FxSerialsBean.class.isAssignableFrom(person.getClass()));
-			FxSerialsBean fxPerson = (FxSerialsBean) person;
+			assertTrue(FxSerialsProxy.class.isAssignableFrom(person.getClass()));
+			FxSerialsProxy fxPerson = (FxSerialsProxy) person;
 			ReadOnlyJavaBeanProperty property = fxPerson.getProperty("name");
 			System.out.println("Property name is " + property);
 			// test that a second call gets the same instance

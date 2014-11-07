@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
 
 public class TestPersonFX extends Person implements
-		org.juffrou.fx.serials.FxSerialsBean {
+		org.juffrou.fx.serials.FxSerialsProxy {
 
 	private java.util.Map __fx_properties = new java.util.HashMap();
 
