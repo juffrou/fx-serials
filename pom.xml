@@ -46,7 +46,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/cemartins/fx-serials.git</connection>
 		<developerConnection>scm:git:https://github.com/cemartins/fx-serials.git</developerConnection>
-		<url>https://github.com/cemartins/fx-serials/</url>
+		<url>https://github.com/cemartins/fx-serials.git</url>
 	</scm>
 
 	<issueManagement>
@@ -118,6 +118,28 @@
 			</activation>
 			<build>
 				<plugins>
+					<plugin>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadoc</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>

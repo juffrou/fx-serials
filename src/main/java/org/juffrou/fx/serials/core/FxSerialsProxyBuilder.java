@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates Java Classes at runtime.<p/>
+ * Creates Java Classes at runtime.<p>
  * The created classes will extend a traditional Java Bean and implement the JavaFX Bean specification
  * by adding methods to obtain JavaFX2 properties corresponding to the traditional Java Bean Properties.
  * 
@@ -239,9 +239,8 @@ public class FxSerialsProxyBuilder {
 	 * @param fxSerials class to proxy
 	 * @param svUID serialVersionUID field value of the class to proxy
 	 * @return the proxy class.
-	 * @throws FxSerialsProxyAlreadExistsException
 	 */
-	public Class<?> buildFXSerialsProxy(Class<?> fxSerials, long svUID) throws FxSerialsProxyAlreadExistsException {
+	public Class<?> buildFXSerialsProxy(Class<?> fxSerials, long svUID) {
 		
 		try {
 			List<FieldInfo> fields = new ArrayList<FieldInfo>();
@@ -267,8 +266,6 @@ public class FxSerialsProxyBuilder {
 
 				ctClass = pool.makeClass(name);
 				
-			} catch(RuntimeException e) {
-				throw new FxSerialsProxyAlreadExistsException();
 			} catch (ClassNotFoundException e) {
 				throw new FxSerialsProxyCreationException("Proxy already exists, but I cannot do Class.forName() on it", e);
 			}
