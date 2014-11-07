@@ -4,9 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.juffrou.fx.serials.FxSerials;
+import org.juffrou.fx.serials.FxSerialsProxy;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
+import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.juffrou.fx.serials.error.FxSerialsProxyAlreadExistsException;
 
 /**
@@ -31,6 +35,7 @@ public class FxInputStream extends ObjectInputStream {
 	public FxInputStream(InputStream in, FxSerialsProxyBuilder proxyBuilder) throws IOException {
 		super(in);
 		this.proxyBuilder = proxyBuilder;
+		enableResolveObject(true);
 	}
 
 	@Override
@@ -44,6 +49,22 @@ public class FxInputStream extends ObjectInputStream {
 			} catch (FxSerialsProxyAlreadExistsException e) { }
 		
 		return resolveClass;
+	}
+	
+	@Override
+	protected Object resolveObject(Object obj) throws IOException {
+		
+		// If the object is an FxSerialsProxy instance, then initialize its properties list
+		if(FxSerialsProxy.class.isAssignableFrom(obj.getClass())) {
+			try {
+				Method method = obj.getClass().getMethod("initPropertiesList", null);
+				method.invoke(obj, null);
+			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw new CannotInitializeFxPropertyListException("Error calling initPropertiesList() on " + obj.getClass().getSimpleName() + ": " + e.getMessage(), e);
+			}
+		}
+		
+		return obj;
 	}
 	
 	/**

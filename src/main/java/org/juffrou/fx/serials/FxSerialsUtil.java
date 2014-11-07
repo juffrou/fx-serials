@@ -5,8 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
+import javafx.beans.property.ReadOnlyProperty;
+
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.FxTransformerException;
+import org.juffrou.fx.serials.error.ObjectIsNotFxProxyException;
 import org.juffrou.fx.serials.io.FxInputStream;
 
 /**
@@ -42,5 +45,19 @@ public class FxSerialsUtil {
 		} catch (IOException | ClassNotFoundException e) {
 			throw new FxTransformerException("Error deserializing bean", e);
 		}
+	}
+	
+	/**
+	 * Gets a JavaFX property from a FxSerialsProxy instance.
+	 * @param proxy proxy instance
+	 * @param fieldName name of field to get the corresponding JavaFX property
+	 * @return a read only or a read/write JavaFX property depending on whether the field is read only.
+	 * 
+	 */
+	public static ReadOnlyProperty<?> getProperty(Object proxy, String fieldName) {
+		if( ! FxSerialsProxy.class.isAssignableFrom(proxy.getClass()))
+			throw new ObjectIsNotFxProxyException(); // @throws ObjectIsNotFxProxyException if the object passed does not implement the FxSerialsProxy interface
+		FxSerialsProxy fxProxy = (FxSerialsProxy) proxy;
+		return fxProxy.getProperty(fieldName);
 	}
 }

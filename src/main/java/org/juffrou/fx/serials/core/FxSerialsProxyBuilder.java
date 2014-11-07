@@ -9,8 +9,11 @@ import java.util.List;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.CtField;
+import javassist.CtField.Initializer;
 import javassist.CtMethod;
+import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
 
@@ -246,19 +249,26 @@ public class FxSerialsProxyBuilder {
 			} catch(RuntimeException e) {
 				throw new FxSerialsProxyAlreadExistsException();
 			}
-	        // add the same serialVersionUID as the base class
+			
+	        // add the same serialVersionUID as the base class so that the deserializer does not complain
 	        CtField field = new CtField(CtClass.longType, "serialVersionUID", ctClass);
 	        field.setModifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL);
 	        ctClass.addField(field, svUID + "L");
+	        
 	        // add initialized properties map
 	        CtClass hashMapClass = pool.get("java.util.HashMap");
 	        CtField fxProperties = new CtField(hashMapClass, "fxProperties", ctClass);
-//	        CtField fxProperties = CtField.make("private final java.util.Map fxProperties = new java.util.HashMap();", ctClass);
-	        ctClass.addField(fxProperties, CtField.Initializer.byNew(hashMapClass));
+	        fxProperties.setModifiers(Modifier.PRIVATE);
+	        ctClass.addField(fxProperties, Initializer.byExpr("new java.util.HashMap();"));
+	        
 	        // add constructor
-//	        CtConstructor ctConstructor = new CtConstructor(new CtClass[]{}, ctClass);
-//	        ctConstructor.setBody("this.fxProperties = new java.util.HashMap();");
-//	        ctClass.addConstructor(ctConstructor);
+	        CtConstructor defaultConstructor = CtNewConstructor.defaultConstructor(ctClass);
+	        defaultConstructor.setBody("{super();}");
+	        ctClass.addConstructor(defaultConstructor);
+	        
+	        // add a method for FxInputStream to initialize the properties list
+	        CtMethod initMethod = CtNewMethod.make("public void initPropertiesList() {this.fxProperties = new java.util.HashMap();}", ctClass);
+	        ctClass.addMethod(initMethod);
 	        
 	        // implement FxSerialsProxy
 	        implementFxSerialsProxy(ctClass);
@@ -289,7 +299,6 @@ public class FxSerialsProxyBuilder {
         		"public javafx.beans.property.adapter.ReadOnlyJavaBeanProperty getProperty(String propertyName) {"
 		+"try {"+
 			"java.lang.reflect.Method m = getClass().getMethod(propertyName + \"Property\", null);"+
-//			"System.out.println(\"calling method: \"+m);"+
 			"javafx.beans.property.adapter.ReadOnlyJavaBeanProperty p = (javafx.beans.property.adapter.ReadOnlyJavaBeanProperty) m.invoke(this, null);"+
 			"return p;"+
 		"} catch (NoSuchMethodException e) {"+
@@ -315,9 +324,6 @@ public class FxSerialsProxyBuilder {
 			String name = fieldInfo.field.getName();
 			StringBuilder methodBody = new StringBuilder();
 			methodBody.append("public " + fieldInfo.returnType + " " + name + "Property() {");
-//			methodBody.append("System.out.println(\"Entered method\");");
-			methodBody.append("if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();");
-//			methodBody.append("System.out.println(\"fxProperties size=\");");
 			methodBody.append(fieldInfo.returnType + " p = ("+fieldInfo.returnType+") this.fxProperties.get(\""+name+"\");");
 			methodBody.append("if(p == null) { try {");
 			methodBody.append("p = "+fieldInfo.builder+".create().bean(this).name(\""+name+"\").getter(\""+fieldInfo.getter+"\")");
@@ -327,7 +333,6 @@ public class FxSerialsProxyBuilder {
 			methodBody.append("this.fxProperties.put(\""+name+"\", p);");
 			methodBody.append("} catch (NoSuchMethodException e) {throw new org.juffrou.fx.serials.error.FxPropertyCreationException(\"Error creating FxProperty for bean property + "+name+"\", e);}");
 			methodBody.append("} return p; }");
-//			System.out.println(methodBody);
 			CtMethod m = CtNewMethod.make(methodBody.toString(), ctClass);
 			ctClass.addMethod(m);
 			
