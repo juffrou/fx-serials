@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -17,14 +16,9 @@ import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
 import org.juffrou.fx.serials.FxSerialsProxy;
 import org.juffrou.fx.serials.io.FxInputStream;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class FXInputStreamTestCase {
-	
-	FxInputStream fxInputStream = null;
-	FileInputStream fileIn = null;
 	
 	private void writePerson() throws IOException {
 		Person person = new Person();
@@ -47,34 +41,18 @@ public class FXInputStreamTestCase {
 		System.out.println("Serialized data is saved in person.ser");
 	}
 	
-	@Before
-	public void setup() {
+	@Test
+	public void test() {
+
+		FxInputStream fxInputStream = null;
+		FileInputStream fileIn = null;
+
 		try {
+			
 			writePerson();
 			fileIn = new FileInputStream("person.ser");
 			fxInputStream = new FxInputStream(fileIn);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@After
-	public void tearDown() {
-		try {
-			if(fxInputStream != null)
-				fxInputStream.close();
-			if(fileIn != null)
-				fileIn.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Test
-	public void test() {
-		try {
+			
 			Person person = (Person) fxInputStream.readObject();
 			System.out.println("Received a " + person.getClass().getName());
 			assertTrue(FxSerialsProxy.class.isAssignableFrom(person.getClass()));
@@ -88,6 +66,16 @@ public class FXInputStreamTestCase {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		finally {
+			try {
+				if(fxInputStream != null)
+					fxInputStream.close();
+				if(fileIn != null)
+					fileIn.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

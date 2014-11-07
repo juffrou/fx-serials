@@ -12,6 +12,8 @@ import org.juffrou.fx.serials.FxSerialsProxy;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.juffrou.fx.serials.error.FxSerialsProxyAlreadExistsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Deserializes traditional Java Beans into JavaFX2 Beans.<br>
@@ -20,6 +22,8 @@ import org.juffrou.fx.serials.error.FxSerialsProxyAlreadExistsException;
  * @author Carlos Martins
  */
 public class FxInputStream extends ObjectInputStream {
+	
+	private static final Logger logger = LoggerFactory.getLogger(FxInputStream.class);
 
 	private final FxSerialsProxyBuilder proxyBuilder;
 
@@ -43,10 +47,20 @@ public class FxInputStream extends ObjectInputStream {
 		
 		Class<?> resolveClass = super.resolveClass(desc);
 		
+		if(logger.isDebugEnabled())
+			logger.debug("resolving " + resolveClass.getName());
+		
 		if( implementsFxSerials(resolveClass) )
 			try {
 				resolveClass = proxyBuilder.buildFXSerialsProxy(resolveClass, desc.getSerialVersionUID());
-			} catch (FxSerialsProxyAlreadExistsException e) { }
+
+				if(logger.isDebugEnabled())
+					logger.debug("created proxy " + resolveClass.getName());
+				
+			} catch (FxSerialsProxyAlreadExistsException e) { 
+				if(logger.isDebugEnabled())
+					logger.debug("did not create proxy (already exists): " + resolveClass.getName() + " - " + e.getMessage(), e);
+			}
 		
 		return resolveClass;
 	}

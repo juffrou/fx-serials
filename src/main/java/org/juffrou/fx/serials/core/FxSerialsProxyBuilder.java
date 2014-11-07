@@ -19,6 +19,8 @@ import javassist.NotFoundException;
 
 import org.juffrou.fx.serials.error.FxSerialsProxyAlreadExistsException;
 import org.juffrou.fx.serials.error.FxSerialsProxyCreationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates Java Classes at runtime.<p/>
@@ -29,6 +31,8 @@ import org.juffrou.fx.serials.error.FxSerialsProxyCreationException;
  *
  */
 public class FxSerialsProxyBuilder {
+	
+	private static final Logger logger = LoggerFactory.getLogger(FxSerialsProxyBuilder.class);
 
 	private static final int HASH_STRING = -1808118735;
 	private static final int HASH_INTEGER = -672261858;
@@ -242,12 +246,17 @@ public class FxSerialsProxyBuilder {
 			String name = fxSerials.getName();
 			int i = name.lastIndexOf('.');
 			String pck = (i == -1 ? "fx_." : name.substring(0, i) + "._fx_.");
-			name = name.substring(i + 1);
+			name = pck + name.substring(i + 1);
 			CtClass ctClass = null;
 			try {
-				ctClass = pool.makeClass(pck + name);
+				ctClass = pool.getOrNull(name);
+				if(ctClass != null)
+					return Class.forName(name);
+				ctClass = pool.makeClass(name);
 			} catch(RuntimeException e) {
 				throw new FxSerialsProxyAlreadExistsException();
+			} catch (ClassNotFoundException e) {
+				throw new FxSerialsProxyCreationException("Proxy already exists, but I cannot do Class.forName() on it", e);
 			}
 			
 	        // add the same serialVersionUID as the base class so that the deserializer does not complain

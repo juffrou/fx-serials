@@ -18,7 +18,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	
+
 	<organization>
 		<name>Carlos Martins</name>
 		<url>http://martins.dtdns.net/~cemartins</url>
@@ -42,7 +42,7 @@
 			<timezone>Europe/Lisbon</timezone>
 		</developer>
 	</developers>
-	
+
 	<scm>
 		<connection>scm:git:https://github.com/cemartins/fx-serials.git</connection>
 		<developerConnection>scm:git:https://github.com/cemartins/fx-serials.git</developerConnection>
@@ -71,8 +71,8 @@
 			<url>file:${site.deploy.dir}</url>
 		</site>
 	</distributionManagement>
-	
-	
+
+
 	<dependencies>
 		<dependency>
 			<groupId>org.javassist</groupId>
@@ -86,8 +86,27 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- LOGGING -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
-	
+
 	<profiles>
 		<profile>
 			<id>release-sign-artifacts</id>
