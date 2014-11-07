@@ -4,7 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -42,6 +44,7 @@ public class FxSerialsProxyBuilder {
 	private static final int HASH_FLOAT = 67973692;
 	
 	private final ClassPool pool;
+	
 
 	public FxSerialsProxyBuilder() {
 		this(ClassPool.getDefault());
@@ -239,7 +242,7 @@ public class FxSerialsProxyBuilder {
 	 * @throws FxSerialsProxyAlreadExistsException
 	 */
 	public Class<?> buildFXSerialsProxy(Class<?> fxSerials, long svUID) throws FxSerialsProxyAlreadExistsException {
-
+		
 		try {
 			List<FieldInfo> fields = new ArrayList<FieldInfo>();
 			collectFieldInfo(fields, fxSerials);
@@ -249,10 +252,21 @@ public class FxSerialsProxyBuilder {
 			name = pck + name.substring(i + 1);
 			CtClass ctClass = null;
 			try {
+				
 				ctClass = pool.getOrNull(name);
-				if(ctClass != null)
+				if(ctClass != null) {
+
+					if(logger.isDebugEnabled())
+						logger.debug("Found existing proxy " + name);
+					
 					return Class.forName(name);
+				}
+
+				if(logger.isDebugEnabled())
+					logger.debug("Creating proxy " + name + " with serialVersionUID=" + svUID);
+
 				ctClass = pool.makeClass(name);
+				
 			} catch(RuntimeException e) {
 				throw new FxSerialsProxyAlreadExistsException();
 			} catch (ClassNotFoundException e) {
@@ -261,8 +275,11 @@ public class FxSerialsProxyBuilder {
 			
 	        // add the same serialVersionUID as the base class so that the deserializer does not complain
 	        CtField field = new CtField(CtClass.longType, "serialVersionUID", ctClass);
-	        field.setModifiers(Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL);
-	        ctClass.addField(field, svUID + "L");
+	        field.setModifiers(Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL);
+	        ctClass.addField(field, Initializer.constant(svUID));
+	        
+	        // add serializable interface
+	        ctClass.addInterface(pool.get("java.io.Serializable"));
 	        
 	        // add initialized properties map
 	        CtClass hashMapClass = pool.get("java.util.HashMap");
@@ -289,6 +306,7 @@ public class FxSerialsProxyBuilder {
 	        addPropertyMethods(ctClass, fields);
 	        
 			Class<?> proxyClass = ctClass.toClass();
+			
 			return proxyClass;
 			
 		} catch (NotFoundException | CannotCompileException e) {

@@ -8,7 +8,7 @@ import org.juffrou.fx.serials.FxSerials;
 
 public class Person implements FxSerials {
 	
-	private static final long serialVersionUID = 6329998877045393661L;
+	public static final long serialVersionUID = 6329998877045393661L;
 
 	private Integer id;
 	private String name;

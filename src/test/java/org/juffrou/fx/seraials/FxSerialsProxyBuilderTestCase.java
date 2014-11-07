@@ -15,7 +15,7 @@ public class FxSerialsProxyBuilderTestCase {
 		FxSerialsProxyBuilder proxyBuilder = new FxSerialsProxyBuilder();
 			Class<?> buildFXSerialsProxyClass;
 			try {
-				buildFXSerialsProxyClass = proxyBuilder.buildFXSerialsProxy(Person.class, 0);
+				buildFXSerialsProxyClass = proxyBuilder.buildFXSerialsProxy(Person.class, Person.serialVersionUID);
 				Object proxy = buildFXSerialsProxyClass.newInstance();
 				Property<String> property = (Property<String>) FxSerialsUtil.getProperty(proxy, "name");
 				property.setValue("Carlos");

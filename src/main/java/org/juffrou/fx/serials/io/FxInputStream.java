@@ -55,7 +55,7 @@ public class FxInputStream extends ObjectInputStream {
 				resolveClass = proxyBuilder.buildFXSerialsProxy(resolveClass, desc.getSerialVersionUID());
 
 				if(logger.isDebugEnabled())
-					logger.debug("created proxy " + resolveClass.getName());
+					logger.debug("resolved with proxy " + resolveClass.getName());
 				
 			} catch (FxSerialsProxyAlreadExistsException e) { 
 				if(logger.isDebugEnabled())
