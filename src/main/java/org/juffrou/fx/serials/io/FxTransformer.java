@@ -28,7 +28,7 @@ public class FxTransformer {
 	public <T> T transform(T bean) {
 		if( ! FxSerials.class.isAssignableFrom(bean.getClass()))
 			throw new IllegalArgumentException("bean must implement FxSerials");
-		if( ! FxSerialsBean.class.isAssignableFrom(bean.getClass()))
+		if( FxSerialsBean.class.isAssignableFrom(bean.getClass()))
 			return bean;
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();

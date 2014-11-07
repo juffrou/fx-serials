@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,9 +90,19 @@ public class FxInputStream extends ObjectInputStream {
 		}
 		for (Field f : clazz.getDeclaredFields()) {
 			if(!Modifier.isStatic(f.getModifiers()) && !Modifier.isTransient(f.getModifiers())) {
+				Class<?> type = f.getType();
+				
+				String getter = inspectReadMethod(clazz, f.getName(), type);
+				String setter = inspectWriteMethod(clazz, f.getName(), type);
+				
+				if(getter == null)
+					continue; // A property with no getter is ignored
+
 				FieldInfo fieldInfo = new FieldInfo();
 				fieldInfo.field = f;
-				Class<?> type = f.getType();
+				fieldInfo.getter = getter;
+				fieldInfo.setter = setter;
+
 				String simpleName = type.getSimpleName();
 				if(type.isPrimitive()) {
 					if(simpleName.equals("int"))
@@ -102,37 +113,132 @@ public class FxInputStream extends ObjectInputStream {
 				
 				switch(simpleName.hashCode()) {
 				case HASH_STRING:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanStringProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanStringPropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanStringProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanStringPropertyBuilder";
+					}
+					else {
+						// property is readonly
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanStringProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanStringPropertyBuilder";
+					}
 					break;
 				case HASH_INTEGER:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanIntegerProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanIntegerProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder";
+					}
+					else {
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanIntegerProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanIntegerPropertyBuilder";
+					}
 					break;
 				case HASH_LONG:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanLongProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanLongPropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanLongProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanLongPropertyBuilder";
+					}
+					else {
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanLongProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanLongPropertyBuilder";
+					}
 					break;
 				case HASH_BOOLEAN:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanBooleanProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanBooleanPropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanBooleanProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanBooleanPropertyBuilder";
+					}
+					else {
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder";
+					}
 					break;
 				case HASH_DOUBLE:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanDoubleProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanDoublePropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanDoubleProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanDoublePropertyBuilder";
+					}
+					else {
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanDoubleProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanDoublePropertyBuilder";
+					}
 					break;
 				case HASH_FLOAT:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanFloatProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanFloatPropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanFloatProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanFloatPropertyBuilder";
+					}
+					else {
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanFloatProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanFloatPropertyBuilder";
+					}
 					break;
 				default:
-					fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanObjectProperty";
-					fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder";
+					if(setter != null) {
+						fieldInfo.returnType = "javafx.beans.property.adapter.JavaBeanObjectProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder";
+					}
+					else {
+						fieldInfo.returnType = "javafx.beans.property.adapter.ReadOnlyJavaBeanObjectProperty";
+						fieldInfo.builder = "javafx.beans.property.adapter.ReadOnlyJavaBeanObjectPropertyBuilder";
+					}
 				}
 				
 				
 				fields.add(fieldInfo);
 			}
+		}
+	}
+
+	public static String inspectReadMethod(Class<?> beanClass, String fieldName, Class<?> fieldClass) {
+		Method getterMethod;
+		String name = fieldName;
+		String methodName = "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
+		try {
+			getterMethod = beanClass.getMethod(methodName, null);
+			return getterMethod.getName();
+		} catch (NoSuchMethodException e) {
+			
+			// try the boolean "is" pattern
+			if(fieldClass == boolean.class || fieldClass == null) {
+				if(name.startsWith("is"))
+					name = name.substring(2);
+				methodName = "is" + name.substring(0, 1).toUpperCase() + name.substring(1);
+				try {
+					getterMethod = beanClass.getMethod(methodName, null);
+					return getterMethod.getName();
+				} catch (NoSuchMethodException e1) {
+					return null;
+				}
+			}
+			else
+				return null;
+
+		}
+	}
+
+	public static String inspectWriteMethod(Class<?> beanClass, String fieldName, Class<?> fieldClass) {
+		String name = fieldName;
+		String methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+		try {
+
+			return beanClass.getMethod(methodName, fieldClass).getName();
+
+		} catch (NoSuchMethodException e) {
+			
+			// try the boolean "is" pattern
+			if(fieldClass == boolean.class) {
+				if(name.startsWith("is"))
+					name = name.substring(2);
+				methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+				try {
+					return beanClass.getMethod(methodName, fieldClass).getName();
+				} catch (NoSuchMethodException e1) {
+					return null;
+				}
+			}
+			else
+				return null;
 		}
 	}
 
@@ -199,26 +305,44 @@ public class FxInputStream extends ObjectInputStream {
 	
 	private void addPropertyMethods(CtClass ctClass, List<FieldInfo> fields) throws NotFoundException, CannotCompileException {
 		for (FieldInfo fieldInfo : fields) {
+			
+			// build property method
 			String name = fieldInfo.field.getName();
-			String methodBody =
-					"public " + fieldInfo.returnType + " " + name + "Property() {"+
-//							"System.out.println(\"Entered method\");"+
-					        "if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();"+
-//							"System.out.println(\"fxProperties size=\");"+
-							fieldInfo.returnType + " p = ("+fieldInfo.returnType+") this.fxProperties.get(\""+name+"\");"+
-							"if(p == null) { try {"+
-							"p = "+fieldInfo.builder+".create().bean(this).name(\""+name+"\").build();"+
-							"this.fxProperties.put(\""+name+"\", p);"+
-							"} catch (NoSuchMethodException e) {throw new org.juffrou.fx.serials.error.FxPropertyCreationException(\"Error creating FxProperty for bean property + "+name+"\", e);}"+
-							"} return p; }";
+			StringBuilder methodBody = new StringBuilder();
+			methodBody.append("public " + fieldInfo.returnType + " " + name + "Property() {");
+//			methodBody.append("System.out.println(\"Entered method\");");
+			methodBody.append("if(this.fxProperties == null) this.fxProperties = new java.util.HashMap();");
+//			methodBody.append("System.out.println(\"fxProperties size=\");");
+			methodBody.append(fieldInfo.returnType + " p = ("+fieldInfo.returnType+") this.fxProperties.get(\""+name+"\");");
+			methodBody.append("if(p == null) { try {");
+			methodBody.append("p = "+fieldInfo.builder+".create().bean(this).name(\""+name+"\").getter(\""+fieldInfo.getter+"\")");
+			if(fieldInfo.setter != null)
+				methodBody.append(".setter(\""+fieldInfo.setter+"\")");
+			methodBody.append(".build();");
+			methodBody.append("this.fxProperties.put(\""+name+"\", p);");
+			methodBody.append("} catch (NoSuchMethodException e) {throw new org.juffrou.fx.serials.error.FxPropertyCreationException(\"Error creating FxProperty for bean property + "+name+"\", e);}");
+			methodBody.append("} return p; }");
 //			System.out.println(methodBody);
-			CtMethod m = CtNewMethod.make(methodBody, ctClass);
+			CtMethod m = CtNewMethod.make(methodBody.toString(), ctClass);
 			ctClass.addMethod(m);
+			
+			if(fieldInfo.setter != null) {
+				// override setter method
+				methodBody.setLength(0);
+				methodBody.append("public void " + fieldInfo.setter+ "(" + fieldInfo.field.getType().getName() + " value) {");
+				methodBody.append("super." + fieldInfo.setter + "(value);");
+				methodBody.append(name + "Property().fireValueChangedEvent();");
+				methodBody.append("}");
+				m = CtNewMethod.make(methodBody.toString(), ctClass);
+				ctClass.addMethod(m);
+			}
 		}
 	}
 	
 	private class FieldInfo {
 		public Field field;
+		public String getter;
+		public String setter;
 		public String returnType;
 		public String builder;
 	}
