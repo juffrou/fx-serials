@@ -2,7 +2,7 @@ package org.juffrou.fx.seraials;
 
 import org.junit.Test;
 
-public class HasCodeTestCase {
+public class HashCodeTestCase {
 
 	@Test
 	public void testHashCodes() {

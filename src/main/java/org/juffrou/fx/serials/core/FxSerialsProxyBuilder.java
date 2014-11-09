@@ -4,9 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -19,7 +17,6 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
 
-import org.juffrou.fx.serials.error.FxSerialsProxyAlreadExistsException;
 import org.juffrou.fx.serials.error.FxSerialsProxyCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,7 +237,8 @@ public class FxSerialsProxyBuilder {
 	 * @param svUID serialVersionUID field value of the class to proxy
 	 * @return the proxy class.
 	 */
-	public Class<?> buildFXSerialsProxy(Class<?> fxSerials, long svUID) {
+	@SuppressWarnings("unchecked")
+	public <T> Class<? extends T> buildFXSerialsProxy(Class<T> fxSerials, long svUID) {
 		
 		try {
 			List<FieldInfo> fields = new ArrayList<FieldInfo>();
@@ -258,7 +256,7 @@ public class FxSerialsProxyBuilder {
 					if(logger.isDebugEnabled())
 						logger.debug("Found existing proxy " + name);
 					
-					return Class.forName(name);
+					return (Class<? extends T>) Class.forName(name);
 				}
 
 				if(logger.isDebugEnabled())
@@ -304,7 +302,7 @@ public class FxSerialsProxyBuilder {
 	        
 			Class<?> proxyClass = ctClass.toClass();
 			
-			return proxyClass;
+			return (Class<? extends T>) proxyClass;
 			
 		} catch (NotFoundException | CannotCompileException e) {
 			throw new FxSerialsProxyCreationException("Error creating FxSerialsProxy for class "+fxSerials.getName()+ ": "+e.getMessage(), e);

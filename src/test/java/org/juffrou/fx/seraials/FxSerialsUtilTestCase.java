@@ -16,7 +16,7 @@ import org.juffrou.fx.serials.FxSerialsProxy;
 import org.juffrou.fx.serials.FxSerialsUtil;
 import org.junit.Test;
 
-public class FxTransformerTestCase {
+public class FxSerialsUtilTestCase {
 
 	@Test
 	public void testFxTransformer() {
@@ -71,4 +71,13 @@ public class FxTransformerTestCase {
 		assertEquals("Carlos", value);
 	}
 
+	@Test
+	public void testClassProxying() {
+		FxSerialsUtil fxSerialsUtil = new FxSerialsUtil();
+
+		ConcreteObject coProxy = fxSerialsUtil.getProxy(ConcreteObject.class);
+		
+		assertTrue(FxSerialsProxy.class.isAssignableFrom(coProxy.getClass()));
+		
+	}
 }

@@ -4,10 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 
 import javafx.beans.property.ReadOnlyProperty;
 
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
+import org.juffrou.fx.serials.error.FxProxyInstantiationException;
 import org.juffrou.fx.serials.error.FxTransformerException;
 import org.juffrou.fx.serials.error.ObjectIsNotFxProxyException;
 import org.juffrou.fx.serials.io.FxInputStream;
@@ -44,6 +46,24 @@ public class FxSerialsUtil {
 			
 		} catch (IOException | ClassNotFoundException e) {
 			throw new FxTransformerException("Error deserializing bean", e);
+		}
+	}
+	
+	/**
+	 * Creates a proxy of beanClass and instantiates it.
+	 * @param beanClass the bean class to proxy
+	 * @return new instance of the bean class proxy
+	 */
+	public <T> T getProxy(Class<T> beanClass) {
+		
+		ObjectStreamClass lookup = ObjectStreamClass.lookup(beanClass);
+		long serialVersionUID = lookup == null ? 0L : lookup.getSerialVersionUID();
+		Class<? extends T> serialsProxyClass = proxyBuilder.buildFXSerialsProxy(beanClass, serialVersionUID);
+		try {
+			T serialsProxy = serialsProxyClass.newInstance();
+			return serialsProxy;
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new FxProxyInstantiationException(e.getMessage(), e);
 		}
 	}
 	

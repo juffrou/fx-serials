@@ -31,7 +31,7 @@ Given a traditional java bean like the following:
 Its corresponding JavaFX2 Bean can be obtained by using one of two different methods:
 
 - Deserializing an object stream containing traditional Java Beans
-- Explicitly transforming one traditional Java Bean
+- Explicitly proxying one traditional Java Bean
 
 Deserializing example:
 
@@ -53,12 +53,12 @@ Transforming example:
 
 ```java
 
-	FxTransformer transformer = new FxTransformer();
+	FxSerialsUtil transformer = new FxSerialsUtil();
 	
 	Person person = new Person();
 	person.setName("Carlos Martins");
 	
-	Person personFx = transformer.transform(person);
+	Person personFx = transformer.getProxy(person);
 ```
 
 In both cases, the personFx object returned extends Person and implements the FxSerialsBean interface. This is what its code would look like:
@@ -79,12 +79,17 @@ In both cases, the personFx object returned extends Person and implements the Fx
 		}
 		
 		public JavaBeanStringProperty nameProperty() {
-		javafx.beans.property.adapter.JavaBeanStringProperty p = (javafx.beans.property.adapter.JavaBeanStringProperty) __fx_properties.get("name");
-		if (p == null) {
-			p = javafx.beans.property.adapter.JavaBeanStringPropertyBuilder	.create().bean(this).name("name").build();
-			__fx_properties.put("name", p);
+			javafx.beans.property.adapter.JavaBeanStringProperty p = (javafx.beans.property.adapter.JavaBeanStringProperty) __fx_properties.get("name");
+			if (p == null) {
+				p = javafx.beans.property.adapter.JavaBeanStringPropertyBuilder.create().bean(this).name("name").getter("getName").setter("setName").build();
+				__fx_properties.put("name", p);
+			}
+			return p;
 		}
-		return p;
+		
+		public void setName(String name) {
+			super.setName(name);
+			nameProperty().fireValueChangedEvent();
 		}
 	}
 
