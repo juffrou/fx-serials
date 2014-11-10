@@ -6,12 +6,12 @@
 		<artifactId>oss-parent</artifactId>
 		<version>9</version>
 	</parent>
-	<groupId>org.juffrou</groupId>
+	<groupId>io.github.juffrou</groupId>
 	<artifactId>fx-serials</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>FXSerials</name>
 	<description>Automagical JavaFX2 Beans</description>
-	<url>http://cemartins.github.io/fx-serials</url>
+	<url>http://juffrou.github.io/fx-serials</url>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -20,11 +20,24 @@
 	</properties>
 
 	<organization>
-		<name>Carlos Martins</name>
-		<url>http://martins.dtdns.net/~cemartins</url>
+		<name>Juffrou</name>
+		<url>http://juffrou.github.io</url>
 	</organization>
 
 	<inceptionYear>2014</inceptionYear>
+	
+	<developers>
+		<developer>
+			<name>Carlos Martins</name>
+			<email>carlos.mfa.martins@gmail.com</email>
+			<organization>Juffrou</organization>
+			<organizationUrl>http://juffrou.github.io</organizationUrl>
+			<timezone>Europe/Lisbon</timezone>
+			<roles>
+				<role>owner</role>
+			</roles>
+		</developer>
+	</developers>
 
 	<licenses>
 		<license>
@@ -35,23 +48,15 @@
 		</license>
 	</licenses>
 
-	<developers>
-		<developer>
-			<name>Carlos Martins</name>
-			<email>carlos.mfa.martins@gmail.com</email>
-			<timezone>Europe/Lisbon</timezone>
-		</developer>
-	</developers>
-
 	<scm>
-		<connection>scm:git:https://github.com/cemartins/fx-serials.git</connection>
-		<developerConnection>scm:git:https://github.com/cemartins/fx-serials.git</developerConnection>
-		<url>https://github.com/cemartins/fx-serials.git</url>
+		<connection>scm:git:https://github.com/juffrou/fx-serials.git</connection>
+		<developerConnection>scm:git:https://github.com/juffrou/fx-serials.git</developerConnection>
+		<url>https://github.com/juffrou/fx-serials.git</url>
 	</scm>
 
 	<issueManagement>
 		<system>Github</system>
-		<url>https://github.com/cemartins/fx-serials/issues</url>
+		<url>https://github.com/juffrou/fx-serials/issues</url>
 	</issueManagement>
 
 	<distributionManagement>
