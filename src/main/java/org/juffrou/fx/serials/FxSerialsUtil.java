@@ -5,6 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javafx.beans.property.ReadOnlyProperty;
 
@@ -30,9 +34,24 @@ public class FxSerialsUtil {
 	 * @return a JavaFX2 Bean
 	 */
 	public <T> T getProxy(T bean) {
-		if( ! FxSerials.class.isAssignableFrom(bean.getClass()))
+		Class<? extends Object> beanClass = bean.getClass();
+		if(Collection.class.isAssignableFrom(beanClass)) {
+			Object element = ((Collection<?>)bean).iterator().next();
+			if(element == null)
+				return bean;
+			beanClass = element.getClass();
+		}
+		else if(Map.class.isAssignableFrom(beanClass)) {
+			Set<?> entrySet = ((Map<?,?>)bean).entrySet();
+			if(entrySet.isEmpty())
+				return bean;
+			Entry<?,?> entry = (Entry<?, ?>) entrySet.iterator().next();
+			Object element = entry.getValue();
+			beanClass = element.getClass();
+		}
+		if( ! FxSerials.class.isAssignableFrom(beanClass))
 			throw new IllegalArgumentException("bean must implement FxSerials");
-		if( FxSerialsProxy.class.isAssignableFrom(bean.getClass()))
+		if( FxSerialsProxy.class.isAssignableFrom(beanClass))
 			return bean;
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();

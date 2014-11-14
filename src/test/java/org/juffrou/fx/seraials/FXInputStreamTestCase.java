@@ -53,12 +53,18 @@ public class FXInputStreamTestCase {
 			fileIn = new FileInputStream("person.ser");
 			fxInputStream = new FxInputStream(fileIn);
 			
+			// Deserialize person
 			Person person = (Person) fxInputStream.readObject();
 			System.out.println("Received a " + person.getClass().getName());
 			assertTrue(FxSerialsProxy.class.isAssignableFrom(person.getClass()));
 			FxSerialsProxy fxPerson = (FxSerialsProxy) person;
 			ReadOnlyJavaBeanProperty property = fxPerson.getProperty("name");
 			System.out.println("Property name is " + property);
+			
+			// Check that the Address was also proxied
+			Address address = person.getAddress();
+			assertTrue(FxSerialsProxy.class.isAssignableFrom(address.getClass()));
+			
 			// test that a second call gets the same instance
 			ReadOnlyJavaBeanProperty property2 = fxPerson.getProperty("name");
 			assertEquals(property, property2);
