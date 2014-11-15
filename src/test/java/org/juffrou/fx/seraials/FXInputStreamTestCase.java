@@ -2,6 +2,7 @@ package org.juffrou.fx.seraials;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -54,7 +55,8 @@ public class FXInputStreamTestCase {
 			fxInputStream = new FxInputStream(fileIn);
 			
 			// Deserialize person
-			Person person = (Person) fxInputStream.readObject();
+			Person person = null;
+			person = (Person) fxInputStream.readObject();
 			System.out.println("Received a " + person.getClass().getName());
 			assertTrue(FxSerialsProxy.class.isAssignableFrom(person.getClass()));
 			FxSerialsProxy fxPerson = (FxSerialsProxy) person;
@@ -68,10 +70,9 @@ public class FXInputStreamTestCase {
 			// test that a second call gets the same instance
 			ReadOnlyJavaBeanProperty property2 = fxPerson.getProperty("name");
 			assertEquals(property, property2);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			fail(e.getMessage());
 		}
 		finally {
 			try {
