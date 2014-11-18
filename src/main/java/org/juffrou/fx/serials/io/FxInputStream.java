@@ -39,7 +39,7 @@ public class FxInputStream extends ObjectInputStream {
 	public FxInputStream(InputStream in, FxSerialsProxyBuilder proxyBuilder) throws IOException {
 		super(in);
 		this.proxyBuilder = proxyBuilder;
-		enableResolveObject(true);
+//		enableResolveObject(true);
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class FxInputStream extends ObjectInputStream {
 	}
 	
 	@Override
-	protected Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
+	public Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
 		return super.resolveProxyClass(interfaces);
 	}
 	
