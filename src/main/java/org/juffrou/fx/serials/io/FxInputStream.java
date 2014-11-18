@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
-import java.io.StreamCorruptedException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -102,33 +101,6 @@ public class FxInputStream extends ObjectInputStream {
 	public Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
 		return super.resolveProxyClass(interfaces);
 	}
-	
-	@Override
-	protected void readStreamHeader() throws IOException, StreamCorruptedException {
-		super.readStreamHeader();
-	}
-	
-	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		return super.clone();
-	}
-	
-	@Override
-	protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
-		ObjectStreamClass desc;
-		desc = super.readClassDescriptor();
-//        desc = new ObjectStreamClass();
-//        desc.readNonProxy(this);
-        return desc;
-
-	}
-	
-	@Override
-	protected Object readObjectOverride() throws IOException, ClassNotFoundException {
-		return super.readObjectOverride();
-	}
-	
-	
 	
 	/**
 	 * Test if a class declares to implement the interface FxSerials
