@@ -1,6 +1,7 @@
 package org.juffrou.fx.seraials;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -11,10 +12,12 @@ import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.adapter.JavaBeanStringProperty;
+import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
 
 import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.ConcreteObject;
@@ -46,7 +49,19 @@ public class FxSerialsUtilTestCase {
 
 		Person personFx = transformer.getProxy(person);
 		
-		transformer.getProxy(personFx);
+		assertNotNull(personFx);
+		assertTrue(FxSerialsProxy.class.isAssignableFrom(personFx.getClass()));
+		
+		Person secondProxy = transformer.getProxy(personFx);
+		assertTrue(secondProxy == personFx);
+		
+		Address addressFx = personFx.getAddress();
+		assertNotNull(addressFx);
+		assertTrue(FxSerialsProxy.class.isAssignableFrom(addressFx.getClass()));
+		
+		Set<Contact> contacts = personFx.getContacts();
+		for(Contact contactFx : contacts)
+			assertTrue(FxSerialsProxy.class.isAssignableFrom(contactFx.getClass()));
 		
 	}
 	
@@ -110,11 +125,21 @@ public class FxSerialsUtilTestCase {
 		serializeAndDeserialize.forEach(c -> System.out.println(c));
 		
 		List<Contact> proxy = fxSerialsUtil.getProxy(contacts);
-
+		
+		assertNotNull(proxy);
+		
 		proxy.forEach(c -> System.out.println(c));
 		
 		Contact contactProxy = proxy.get(0);
 		assertEquals("mobile", contactProxy.getDescription());
+		assertEquals("91xxxxxx", contactProxy.getValue());
+		
+		assertTrue(FxSerialsProxy.class.isAssignableFrom(contactProxy.getClass()));
+		
+		ReadOnlyJavaBeanProperty property = ((FxSerialsProxy)contactProxy).getProperty("description");
+		
+		assertNotNull(property);
+		assertEquals("mobile", property.getValue());
 	}
 	
 	
