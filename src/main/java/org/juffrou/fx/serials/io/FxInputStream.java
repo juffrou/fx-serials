@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.juffrou.reflect.BeanWrapperContext;
+import net.sf.juffrou.reflect.BeanWrapperFactory;
+import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
 import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
 import org.juffrou.fx.serials.FxSerials;
@@ -31,6 +33,8 @@ public class FxInputStream extends ObjectInputStream {
 	private final FxSerialsProxyBuilder proxyBuilder;
 	
 	private final Map<Class<?>, Class<?>> proxyCache = new HashMap<>();
+	
+	private final BeanWrapperFactory bwFactory = new DefaultBeanWrapperFactory();
 
 	protected FxInputStream() throws IOException, SecurityException {
 		super();
@@ -74,7 +78,9 @@ public class FxInputStream extends ObjectInputStream {
 		Class<?> proxyClass = proxyCache.get(obj.getClass());
 		if(proxyClass != null) {
 			try {
-				BeanWrapperContext context = BeanWrapperContext.create(obj.getClass());
+				
+				// copy the properties from obj to proxy
+				BeanWrapperContext context = bwFactory.getBeanWrapperContext(obj.getClass());
 				JuffrouBeanWrapper srcWrapper = new JuffrouBeanWrapper(context, obj);
 				Object proxyObj = proxyClass.newInstance();
 				JuffrouBeanWrapper dstWrapper = new JuffrouBeanWrapper(context, proxyObj);
