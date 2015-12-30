@@ -35,14 +35,15 @@
 
 <p>Copyright (C) 2014- by Carlos Martins, All rights reserved.</p>
 
-<p>Transforms traditional Java Beans into JavaFX2 Beans by adding property methods which return the appropriate JavaFX property type.</p>
+<p>This library allows you to transform traditional Java Beans into JavaFX2 Beans by adding property methods which return the appropriate JavaFX2 property type for each bean attribute. 
+The transformed JavaFX2 beans can later on by transformed back into their original Java Beans.</p>
 
-<p>Given a traditional java bean like the following:</p>
+<p>Given a traditional java bean with a <code>name</code> attribute like the following:</p>
 
 <div class="highlight highlight-java"><pre>
     <span class="k">package</span> <span class="k">example.fxseraials</span>
 
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span> <span class="k">implements</span> <span class="no">FxSerials</span> {
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span> <span class="k">implements</span> <span class="no">JFXSerializable</span> {
 
         <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="kt">long</span> serialVersionUID <span class="o">=</span> <span class="m">6329998877045393661L</span>;
 
@@ -56,43 +57,12 @@
         }
     }</pre></div>
 
-<p>Its corresponding JavaFX2 Bean can be obtained by using one of two different methods:</p>
-
-<ul>
-<li>Deserializing an object stream containing traditional Java Beans</li>
-<li>Explicitly proxying one traditional Java Bean</li>
-</ul>
-
-<p>Deserializing example:</p>
-
-<div class="highlight highlight-java"><pre>
-    <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
-    person<span class="o">.</span>setName(<span class="s2">"Carlos Martins"</span>);
-    <span class="kt">FileOutputStream</span> fileOut <span class="o">=</span> <span class="k">new</span> <span class="kt">FileOutputStream</span>(<span class="s2">"person.ser"</span>);
-    <span class="kt">ObjectOutputStream</span> out <span class="o">=</span> <span class="k">new</span> <span class="kt">ObjectOutputStream</span>(fileOut);
-    out<span class="o">.</span>writeObject(person);
-    out<span class="o">.</span>close();
-    fileOut<span class="o">.</span>close();
-
-    fxInputStream <span class="o">=</span> <span class="k">new</span> <span class="kt">FxInputStream</span>(<span class="k">new</span> <span class="kt">FileInputStream</span>(<span class="s2">"person.ser"</span>););
-    <span class="kt">Person</span> personFx <span class="o">=</span> (<span class="kt">Person</span>) fxInputStream<span class="o">.</span>readObject();</pre></div>
-
-<p>Transforming example:</p>
-
-<div class="highlight highlight-java"><pre>
-    <span class="kt">FxSerialsUtil</span> transformer <span class="o">=</span> <span class="k">new</span> <span class="kt">FxSerialsUtil</span>();
-
-    <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
-    person<span class="o">.</span>setName(<span class="s2">"Carlos Martins"</span>);
-
-    <span class="kt">Person</span> personFx <span class="o">=</span> transformer<span class="o">.</span>getProxy(person);</pre></div>
-
-<p>In both cases, the personFx object returned extends Person and implements the FxSerialsBean interface. This is what its code would look like:</p>
+<p>Its corresponding JavaFX2 Bean will extend it and add a <code>JavaBeanStringProperty</code> for the <code>name</code> attribute called <code>nameProperty</code>. If it were written in Java source code it would look like the following:</p>
 
 <div class="highlight highlight-java"><pre>
     <span class="k">package</span> <span class="k">example.fxseraials._fx_</span>
 
-    <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="no">example.fxseraials<span class="o">.</span>Person</span> <span class="k">implements</span> <span class="no">FxSerialsBean</span> {
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="no">example.fxseraials<span class="o">.</span>Person</span> <span class="k">implements</span> <span class="no">JFXProxy</span> {
 
         <span class="k">private</span> <span class="k">static</span> <span class="k">final</span> <span class="kt">long</span> serialVersionUID <span class="o">=</span> <span class="m">6329998877045393661L</span>;
 
@@ -104,9 +74,9 @@
         }
 
         <span class="k">public</span> <span class="kt">JavaBeanStringProperty</span> <span class="nf">nameProperty</span>() {
-            <span class="kt">javafx.beans.property.adapter<span class="o">.</span>JavaBeanStringProperty</span> p <span class="o">=</span> (<span class="kt">javafx.beans.property.adapter<span class="o">.</span>JavaBeanStringProperty</span>) __fx_properties<span class="o">.</span>get(<span class="s2">"name"</span>);
+            <span class="kt">JavaBeanStringProperty</span> p <span class="o">=</span> (<span class="kt">JavaBeanStringProperty</span>) __fx_properties<span class="o">.</span>get(<span class="s2">"name"</span>);
             <span class="k">if</span> (p <span class="o">==</span> <span class="kc">null</span>) {
-                p <span class="o">=</span> <span class="kt">javafx.beans.property.adapter<span class="o">.</span>JavaBeanStringPropertyBuilder</span><span class="o">.</span>create()<span class="o">.</span>bean(<span class="nb">this</span>)<span class="o">.</span>name(<span class="s2">"name"</span>)<span class="o">.</span>getter(<span class="s2">"getName"</span>)<span class="o">.</span>setter(<span class="s2">"setName"</span>)<span class="o">.</span>build();
+                p <span class="o">=</span> <span class="kt">JavaBeanStringPropertyBuilder</span><span class="o">.</span>create()<span class="o">.</span>bean(<span class="nb">this</span>)<span class="o">.</span>name(<span class="s2">"name"</span>)<span class="o">.</span>getter(<span class="s2">"getName"</span>)<span class="o">.</span>setter(<span class="s2">"setName"</span>)<span class="o">.</span>build();
                 __fx_properties<span class="o">.</span>put(<span class="s2">"name"</span>, p);
             }
             <span class="k">return</span> p;
@@ -119,10 +89,50 @@
     }
 </pre></div>
 
-<p>This class is not instantiated by you, so you can only access the method <code>nameProperty</code> through introspection. The good news in that the implemented <code>FxSerialsBean</code> interface defines a method which allows you to obtain any property:</p>
+<p>In a more complex <code>Person</code> bean - containing a list of <code>Address</code> beans and a reference to a <code>Nationality</code> bean for example, they would also be transformed into JavaFX2 beans. 
+In that case, the transformed <code>Person</code> would contain a list of transformed <code>Address</code> beans and a reference to a transformed <code>Nationality</code> bean.</p>
+
+<p>The JavaFX2 bean classes are created by manipulating Java byte code and instantiated by the fx-serials library, so the property methods (namePropertyin the above example) are only available through introspection. 
+The good news is that the implemented <code>JFXProxy</code> interface defines a method which allows you to obtain any property:</p>
 
 <div class="highlight highlight-java"><pre>
     <span class="k">public</span> <span class="kt">ReadOnlyJavaBeanProperty</span> getProperty(<span class="kt">String</span> propertyName);</pre></div>
+
+<h2>Quick Start</h2>
+
+<p>JavaFX2 beans can be obtained in two ways:</p>
+
+<ul>
+<li>Deserializing an object stream containing traditional Java Beans</li>
+<li>Using <code>FxSerialsContext</code> to explicitly proxy one traditional Java Bean</li>
+</ul>
+
+<p>Deserializing example:</p>
+<p>Given a Person class which implements the JFXSerializable interface:</p>
+
+<div class="highlight highlight-java"><pre>
+    <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
+    person<span class="o">.</span>setName(<span class="s2">"Carlos Martins"</span>);
+    <span class="kt">FileOutputStream</span> fileOut <span class="o">=</span> <span class="k">new</span> <span class="kt">FileOutputStream</span>(<span class="s2">"person.ser"</span>);
+    <span class="kt">ObjectOutputStream</span> out <span class="o">=</span> <span class="k">new</span> <span class="kt">ObjectOutputStream</span>(fileOut);
+    out<span class="o">.</span>writeObject(person);
+    out<span class="o">.</span>close();
+    fileOut<span class="o">.</span>close();
+
+    <span class="kt">FxProxyCreatorInputStream</span> fxInputStream <span class="o">=</span> <span class="k">new</span> <span class="kt">FxProxyCreatorInputStream</span>(<span class="k">new</span> <span class="kt">FileInputStream</span>(<span class="s2">"person.ser"</span>););
+    <span class="kt">Person</span> personFx <span class="o">=</span> (<span class="kt">Person</span>) fxInputStream<span class="o">.</span>readObject();</pre></div>
+
+<p>FxSerialsContext example:</p>
+
+<div class="highlight highlight-java"><pre>
+    <span class="kt">FxSerialsContext</span> transformer <span class="o">=</span> <span class="k">new</span> <span class="kt">FxSerialsContext</span>();
+
+    <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
+    person<span class="o">.</span>setName(<span class="s2">"Carlos Martins"</span>);
+
+    <span class="kt">Person</span> personFx <span class="o">=</span> transformer<span class="o">.</span>getProxy(person);</pre></div>
+
+
 
 <p>Note: FXSerials uses <a href="https://github.com/jboss-javassist/javassist" title="Javassist on Github">Javassist version 3</a></p>
 
