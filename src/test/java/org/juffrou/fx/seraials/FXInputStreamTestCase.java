@@ -13,9 +13,9 @@ import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
 import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
-import org.juffrou.fx.serials.FxSerials;
-import org.juffrou.fx.serials.FxSerialsProxy;
-import org.juffrou.fx.serials.io.FxInputStream;
+import org.juffrou.fx.serials.JFXSerializable;
+import org.juffrou.fx.serials.JFXProxy;
+import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
 import org.junit.Test;
 
 public class FXInputStreamTestCase {
@@ -56,23 +56,23 @@ public class FXInputStreamTestCase {
 	@Test
 	public void testReadSimpleObject() {
 		
-		FxInputStream fxInputStream = null;
+		FxProxyCreatorInputStream fxInputStream = null;
 		FileInputStream fileIn = null;
 
 		try {
 			
 			writeContact();
 			fileIn = new FileInputStream("contact.ser");
-			fxInputStream = new FxInputStream(fileIn);
+			fxInputStream = new FxProxyCreatorInputStream(fileIn);
 			
 			// Deserialize contact
 			Contact contact = null;
 			contact = (Contact) fxInputStream.readObject();
 			System.out.println("Received a " + contact.getClass().getName());
 
-			assertTrue(FxSerialsProxy.class.isAssignableFrom(contact.getClass()));
+			assertTrue(JFXProxy.class.isAssignableFrom(contact.getClass()));
 			
-			FxSerialsProxy fxContact = (FxSerialsProxy) contact;
+			JFXProxy fxContact = (JFXProxy) contact;
 			assertEquals("Mobile", contact.getDescription());
 			
 			ReadOnlyJavaBeanProperty property = fxContact.getProperty("description");
@@ -97,28 +97,28 @@ public class FXInputStreamTestCase {
 	@Test
 	public void testReadObject() {
 
-		FxInputStream fxInputStream = null;
+		FxProxyCreatorInputStream fxInputStream = null;
 		FileInputStream fileIn = null;
 
 		try {
 			
 			writePerson();
 			fileIn = new FileInputStream("person.ser");
-			fxInputStream = new FxInputStream(fileIn);
+			fxInputStream = new FxProxyCreatorInputStream(fileIn);
 			
 			// Deserialize person
 			Person person = null;
 			person = (Person) fxInputStream.readObject();
 			System.out.println("Received a " + person.getClass().getName());
-			assertTrue(FxSerialsProxy.class.isAssignableFrom(person.getClass()));
-			FxSerialsProxy fxPerson = (FxSerialsProxy) person;
+			assertTrue(JFXProxy.class.isAssignableFrom(person.getClass()));
+			JFXProxy fxPerson = (JFXProxy) person;
 			ReadOnlyJavaBeanProperty property = fxPerson.getProperty("name");
 			System.out.println("Property name is " + property);
 			
 			// Check that the Address was also proxied
 			Address address = person.getAddress();
 			assertNotNull(address);
-			assertTrue(FxSerialsProxy.class.isAssignableFrom(address.getClass()));
+			assertTrue(JFXProxy.class.isAssignableFrom(address.getClass()));
 			
 			// test that a second call gets the same instance
 			ReadOnlyJavaBeanProperty property2 = fxPerson.getProperty("name");
@@ -141,18 +141,18 @@ public class FXInputStreamTestCase {
 	
 	@Test
 	public void testResolveProxy() {
-		FxInputStream fxInputStream = null;
+		FxProxyCreatorInputStream fxInputStream = null;
 		FileInputStream fileIn = null;
 
 		try {
 			
 			writePerson();
 			fileIn = new FileInputStream("person.ser");
-			fxInputStream = new FxInputStream(fileIn);
+			fxInputStream = new FxProxyCreatorInputStream(fileIn);
 			
 			// Auto-proxy person
 			
-			Class<?> personClass = fxInputStream.resolveProxyClass(new String[] {FxSerials.class.getName()});
+			Class<?> personClass = fxInputStream.resolveProxyClass(new String[] {JFXSerializable.class.getName()});
 			
 			// Test the proxy returned
 			System.out.println("Received a " + personClass.getName());

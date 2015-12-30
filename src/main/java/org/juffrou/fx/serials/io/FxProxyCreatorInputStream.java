@@ -14,11 +14,14 @@ import net.sf.juffrou.reflect.BeanWrapperFactory;
 import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
 import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
-import org.juffrou.fx.serials.FxSerials;
+import org.juffrou.fx.serials.JFXSerializable;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 /**
  * Deserializes traditional Java Beans into JavaFX2 Beans.<br>
@@ -26,28 +29,36 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Carlos Martins
  */
-public class FxInputStream extends ObjectInputStream {
+public class FxProxyCreatorInputStream extends ObjectInputStream {
 	
-	private static final Logger logger = LoggerFactory.getLogger(FxInputStream.class);
+	private static final Logger logger = LoggerFactory.getLogger(FxProxyCreatorInputStream.class);
 
+	// The builder who builds java fx proxys
 	private final FxSerialsProxyBuilder proxyBuilder;
 	
-	private final Map<Class<?>, Class<?>> proxyCache = new HashMap<>();
+	// A Bimap with Class as key and Proxy Class as Value
+	private final BiMap<Class<?>, Class<?>> proxyCache;
 	
-	private final BeanWrapperFactory bwFactory = new DefaultBeanWrapperFactory();
+	// Factory for creating bean wrapper contexts to read the normal classes
+	private final BeanWrapperFactory bwFactory;
 
-	protected FxInputStream() throws IOException, SecurityException {
+	protected FxProxyCreatorInputStream() throws IOException, SecurityException {
 		super();
 		this.proxyBuilder = new FxSerialsProxyBuilder();
+		this.proxyCache = HashBiMap.create();
+		this.bwFactory = new DefaultBeanWrapperFactory();
+
 	}
 
-	public FxInputStream(InputStream in) throws IOException {
-		this(in, new FxSerialsProxyBuilder());
+	public FxProxyCreatorInputStream(InputStream in) throws IOException {
+		this(in, new FxSerialsProxyBuilder(), HashBiMap.create(), new DefaultBeanWrapperFactory());
 	}
 
-	public FxInputStream(InputStream in, FxSerialsProxyBuilder proxyBuilder) throws IOException {
+	public FxProxyCreatorInputStream(InputStream in, FxSerialsProxyBuilder proxyBuilder, BiMap<Class<?>, Class<?>> builderCache, BeanWrapperFactory bwFactory) throws IOException {
 		super(in);
 		this.proxyBuilder = proxyBuilder;
+		this.proxyCache = builderCache;
+		this.bwFactory = bwFactory;
 		enableResolveObject(true);
 	}
 
@@ -96,7 +107,7 @@ public class FxInputStream extends ObjectInputStream {
 			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				throw new CannotInitializeFxPropertyListException("Error calling initPropertiesList() on " + obj.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			} catch (InstantiationException e) {
-				throw new CannotInitializeFxPropertyListException("Error instatiating proxy bean" + proxyClass.getName() + ": " + e.getMessage(), e);
+				throw new CannotInitializeFxPropertyListException("Error instatiating proxy class " + proxyClass.getName() + ": " + e.getMessage(), e);
 			}
 		}
 		
@@ -117,7 +128,7 @@ public class FxInputStream extends ObjectInputStream {
 	 */
 	private boolean implementsFxSerials(Class<?> clazz) {
 		for (Class<?> itf : clazz.getInterfaces())
-			if (itf == FxSerials.class)
+			if (itf == JFXSerializable.class)
 				return true;
 		return false;
 	}

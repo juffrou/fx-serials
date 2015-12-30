@@ -1,8 +1,8 @@
 package org.juffrou.fx.seraials.dom;
 
-import org.juffrou.fx.serials.FxSerials;
+import org.juffrou.fx.serials.JFXSerializable;
 
-public class Contact implements FxSerials {
+public class Contact implements JFXSerializable {
 
 	private static final long serialVersionUID = -2520658029258402172L;
 

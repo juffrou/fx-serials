@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.juffrou.fx.serials.FxSerials;
+import org.juffrou.fx.serials.JFXSerializable;
 
-public class Person implements FxSerials {
+public class Person implements JFXSerializable {
 	
 	public static final long serialVersionUID = 6329998877045393661L;
 

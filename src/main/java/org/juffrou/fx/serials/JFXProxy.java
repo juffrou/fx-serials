@@ -1,5 +1,7 @@
 package org.juffrou.fx.serials;
 
+import java.io.Serializable;
+
 import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
 
 
@@ -10,7 +12,7 @@ import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
  * 
  * @author Carlos Martins
  */
-public interface FxSerialsProxy {
+public interface JFXProxy extends Serializable {
 
 	/**
 	 * Obtains the JavaFX2 property that corresponds to a specific property of this bean.<p>

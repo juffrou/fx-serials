@@ -7,5 +7,5 @@ import java.io.Serializable;
  * 
  * @author Carlos Martins
  */
-public interface FxSerials extends Serializable {
+public interface JFXSerializable extends Serializable {
 }

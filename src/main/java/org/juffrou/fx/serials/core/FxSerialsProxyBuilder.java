@@ -18,6 +18,7 @@ import javassist.CtNewMethod;
 import javassist.NotFoundException;
 
 import org.juffrou.fx.serials.error.FxSerialsProxyCreationException;
+import org.juffrou.fx.serials.error.OriginalClassNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -279,7 +280,7 @@ public class FxSerialsProxyBuilder {
 	        // add initialized properties map
 	        CtClass hashMapClass = pool.get("java.util.HashMap");
 	        CtField fxProperties = new CtField(hashMapClass, "fxProperties", ctClass);
-	        fxProperties.setModifiers(Modifier.PRIVATE);
+	        fxProperties.setModifiers(Modifier.PRIVATE | Modifier.TRANSIENT);
 	        ctClass.addField(fxProperties, Initializer.byExpr("new java.util.HashMap();"));
 	        
 	        // add constructor
@@ -305,9 +306,28 @@ public class FxSerialsProxyBuilder {
 			return (Class<? extends T>) proxyClass;
 			
 		} catch (NotFoundException | CannotCompileException e) {
-			throw new FxSerialsProxyCreationException("Error creating FxSerialsProxy for class "+fxSerials.getName()+ ": "+e.getMessage(), e);
+			throw new FxSerialsProxyCreationException("Error creating JFXProxy for class "+fxSerials.getName()+ ": "+e.getMessage(), e);
 		}
 	}
+	
+
+	/**
+	 * Returns the class that originated the FxSerialsProxy passed
+	 * @param fxSerialsProxyClass
+	 * @return
+	 */
+	public Class<?> cleanFXSerialsProxy(Class<?> fxSerialsProxyClass) {
+		
+		String originalClassName = fxSerialsProxyClass.getName();
+		originalClassName = originalClassName.replace("_fx_.", "");
+		try {
+			Class<?> originalClass = Class.forName(originalClassName);
+			return originalClass;
+		} catch (ClassNotFoundException e) {
+			throw new OriginalClassNotFoundException();
+		}
+	}
+
 	
 	/**
 	 * Adds the methods defined in the interface FxSerialsProxy and adds the implements declaration
@@ -336,7 +356,7 @@ public class FxSerialsProxyBuilder {
 		"} }"
         , ctClass);
         ctClass.addMethod(getPropertyMethod);
-        ctClass.addInterface(pool.get("org.juffrou.fx.serials.FxSerialsProxy"));
+        ctClass.addInterface(pool.get("org.juffrou.fx.serials.JFXProxy"));
 	}
 	
 	private void addPropertyMethods(CtClass ctClass, List<FieldInfo> fields) throws NotFoundException, CannotCompileException {

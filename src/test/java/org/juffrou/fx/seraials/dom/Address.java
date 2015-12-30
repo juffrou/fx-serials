@@ -1,8 +1,8 @@
 package org.juffrou.fx.seraials.dom;
 
-import org.juffrou.fx.serials.FxSerials;
+import org.juffrou.fx.serials.JFXSerializable;
 
-public class Address implements FxSerials {
+public class Address implements JFXSerializable {
 	
 	// do not add serialVersionUUID
 
