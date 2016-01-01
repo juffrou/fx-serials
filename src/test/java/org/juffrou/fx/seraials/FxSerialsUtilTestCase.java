@@ -12,42 +12,59 @@ import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
-import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.adapter.JavaBeanStringProperty;
-import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
-import javafx.beans.property.adapter.JavaBeanProperty;
 
 import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.ConcreteObject;
 import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
-import org.juffrou.fx.serials.JFXProxy;
 import org.juffrou.fx.serials.FxSerialsContext;
+import org.juffrou.fx.serials.JFXProxy;
 import org.juffrou.fx.serials.error.FxTransformerException;
 import org.junit.Test;
 
-public class FxSerialsUtilTestCase {
+import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleMapProperty;
+import javafx.beans.property.SimpleSetProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.adapter.JavaBeanProperty;
+import javafx.beans.property.adapter.JavaBeanStringProperty;
 
-	@Test
-	public void testFxTransformer() {
-		FxSerialsContext transformer = new FxSerialsContext();
-		
+public class FxSerialsUtilTestCase {
+	
+	private Person createPerson() {
+
 		Person person = new Person();
-		person.setName("Carlos Martins");
-		person.setEmail("carlos@martins.net");
+		person.setName("John Doe");
+		person.setEmail("john@doe.net");
 		person.setDateOfBirth(LocalDate.of(1967, 10, 1));
 		Address address = new Address();
-		address.setStreet("My Street");
+		address.setStreet("Dark Street");
 		address.setDoor("Number 1");
 		person.setAddress(address);
 		Contact phone=new Contact();
 		phone.setDescription("Mobile");
 		phone.setValue("918 333 222");
 		person.addContact(phone);
+		person.addNicknames("Nick");
+		
+		Person spouse = new Person();
+		spouse.setName("Jane Doe");
+		spouse.setEmail("jane@doe.net");
+		spouse.setAddress(address);
+		spouse.setDateOfBirth(LocalDate.of(1966, 6, 21));
+		
+		person.addRelation("spouse", spouse);
+		
+		return person;
+	}
+
+	@Test
+	public void testFxTransformer() {
+		FxSerialsContext transformer = new FxSerialsContext();
+		
+		Person person = createPerson();
 
 		Person personFx = transformer.getProxy(person);
 		
@@ -61,7 +78,16 @@ public class FxSerialsUtilTestCase {
 		assertNotNull(addressFx);
 		assertTrue(JFXProxy.class.isAssignableFrom(addressFx.getClass()));
 		
-		Set<Contact> contacts = personFx.getContacts();
+		ReadOnlyProperty<?> property = ((JFXProxy)personFx).getProperty("contacts");
+		assertTrue("Espected a SimpleListProperty", SimpleListProperty.class == property.getClass());
+
+		property = ((JFXProxy)personFx).getProperty("nicknames");
+		assertTrue("Espected a SimpleSetProperty", SimpleSetProperty.class == property.getClass());
+
+		property = ((JFXProxy)personFx).getProperty("relations");
+		assertTrue("Espected a SimpleMapProperty", SimpleMapProperty.class == property.getClass());
+
+		List<Contact> contacts = personFx.getContacts();
 		for(Contact contactFx : contacts)
 			assertTrue(JFXProxy.class.isAssignableFrom(contactFx.getClass()));
 		
@@ -138,7 +164,7 @@ public class FxSerialsUtilTestCase {
 		
 		assertTrue(JFXProxy.class.isAssignableFrom(contactProxy.getClass()));
 		
-		ReadOnlyJavaBeanProperty property = ((JFXProxy)contactProxy).getProperty("description");
+		ReadOnlyProperty property = ((JFXProxy)contactProxy).getProperty("description");
 		
 		assertNotNull(property);
 		assertEquals("mobile", property.getValue());
@@ -180,7 +206,7 @@ public class FxSerialsUtilTestCase {
 		assertNotNull(addressFx);
 		assertTrue(JFXProxy.class.isAssignableFrom(addressFx.getClass()));
 		
-		Set<Contact> contacts = personFx.getContacts();
+		List<Contact> contacts = personFx.getContacts();
 		for(Contact contactFx : contacts)
 			assertTrue(JFXProxy.class.isAssignableFrom(contactFx.getClass()));
 

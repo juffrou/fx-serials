@@ -1,6 +1,9 @@
 package org.juffrou.fx.seraials;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,15 +11,15 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 
-import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
-
 import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
-import org.juffrou.fx.serials.JFXSerializable;
 import org.juffrou.fx.serials.JFXProxy;
+import org.juffrou.fx.serials.JFXSerializable;
 import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
 import org.junit.Test;
+
+import javafx.beans.property.ReadOnlyProperty;
 
 public class FXInputStreamTestCase {
 	
@@ -75,7 +78,7 @@ public class FXInputStreamTestCase {
 			JFXProxy fxContact = (JFXProxy) contact;
 			assertEquals("Mobile", contact.getDescription());
 			
-			ReadOnlyJavaBeanProperty property = fxContact.getProperty("description");
+			ReadOnlyProperty<?> property = fxContact.getProperty("description");
 			System.out.println("Property description is " + property);
 			
 		} catch (Exception e) {
@@ -112,7 +115,7 @@ public class FXInputStreamTestCase {
 			System.out.println("Received a " + person.getClass().getName());
 			assertTrue(JFXProxy.class.isAssignableFrom(person.getClass()));
 			JFXProxy fxPerson = (JFXProxy) person;
-			ReadOnlyJavaBeanProperty property = fxPerson.getProperty("name");
+			ReadOnlyProperty property = fxPerson.getProperty("name");
 			System.out.println("Property name is " + property);
 			
 			// Check that the Address was also proxied
@@ -121,7 +124,7 @@ public class FXInputStreamTestCase {
 			assertTrue(JFXProxy.class.isAssignableFrom(address.getClass()));
 			
 			// test that a second call gets the same instance
-			ReadOnlyJavaBeanProperty property2 = fxPerson.getProperty("name");
+			ReadOnlyProperty property2 = fxPerson.getProperty("name");
 			assertEquals(property, property2);
 		} catch (Exception e) {
 			e.printStackTrace();

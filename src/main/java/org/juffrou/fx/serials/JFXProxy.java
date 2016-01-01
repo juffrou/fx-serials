@@ -2,7 +2,7 @@ package org.juffrou.fx.serials;
 
 import java.io.Serializable;
 
-import javafx.beans.property.adapter.ReadOnlyJavaBeanProperty;
+import javafx.beans.property.ReadOnlyProperty;
 
 
 /**
@@ -22,5 +22,5 @@ public interface JFXProxy extends Serializable {
 	 * @return the read only or read/write JavaFX2 property that corresponds to the field
 	 */
 	@SuppressWarnings("rawtypes")
-	public ReadOnlyJavaBeanProperty getProperty(String propertyName);
+	public ReadOnlyProperty<?> getProperty(String propertyName);
 }

@@ -1,7 +1,11 @@
 package org.juffrou.fx.seraials.dom;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.juffrou.fx.serials.JFXSerializable;
@@ -15,7 +19,9 @@ public class Person implements JFXSerializable {
 	private String email;
 	private LocalDate dateOfBirth;
 	private Address address;
-	private Set<Contact> contacts;
+	private List<Contact> contacts;
+	private Set<String> nicknames;
+	private Map<String, Person> relations;
 	
 	
 	public Integer getId() {
@@ -48,15 +54,38 @@ public class Person implements JFXSerializable {
 	public void setAddress(Address address) {
 		this.address = address;
 	}
-	public Set<Contact> getContacts() {
+	public List<Contact> getContacts() {
 		return contacts;
 	}
-	public void setContacts(Set<Contact> contacts) {
+	public void setContacts(List<Contact> contacts) {
 		this.contacts = contacts;
 	}
 	public void addContact(Contact contact) {
 		if(contacts == null)
-			contacts = new HashSet<Contact>();
+			setContacts(new ArrayList<Contact>());
 		contacts.add(contact);
+	}
+	public Set<String> getNicknames() {
+		return nicknames;
+	}
+	public void setNicknames(Set<String> nicknames) {
+		this.nicknames = nicknames;
+	}
+	public void addNicknames(String nickname) {
+		if(nicknames == null)
+			setNicknames(new HashSet<String>());
+		nicknames.add(nickname);
+		
+	}
+	public Map<String, Person> getRelations() {
+		return relations;
+	}
+	public void setRelations(Map<String, Person> relations) {
+		this.relations = relations;
+	}
+	public void addRelation(String relation, Person relative) {
+		if(relations == null)
+			setRelations(new HashMap());
+		relations.put(relation, relative);
 	}
 }
