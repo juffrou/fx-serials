@@ -22,7 +22,7 @@ public class SimpleMapPropertyBuilder {
 		
 		Map<?,?> collection = (Map<?,?>) builderHelper.getCollection();
 		ObservableMap<?,?> om = collection != null ? FXCollections.observableMap(collection) : FXCollections.observableHashMap();
-		SimpleMapProperty<?,?> smp = new SimpleMapProperty(om);
+		SimpleMapProperty<?,?> smp = new SimpleMapProperty(builderHelper.getBean(), builderHelper.getName(), om);
 		
 		return smp;
 	}

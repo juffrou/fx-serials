@@ -30,6 +30,9 @@ import javafx.beans.property.SimpleSetProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.adapter.JavaBeanProperty;
 import javafx.beans.property.adapter.JavaBeanStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 
 public class FxSerialsUtilTestCase {
 	
@@ -171,21 +174,50 @@ public class FxSerialsUtilTestCase {
 	}
 	
 	@Test
+	public void testCollectionProperties() {
+		
+		Person person = createPerson();
+
+		int iSize = person.getContacts().size();
+		
+		FxSerialsContext transformer = new FxSerialsContext();
+ 		Person personFx = transformer.getProxy(person);
+		JFXProxy fxProxy = (JFXProxy) personFx;
+
+		SimpleListProperty<Contact> slp = (SimpleListProperty<Contact>) fxProxy.getProperty("contacts");
+		MyListener myListener = new MyListener();
+		slp.addListener(myListener);
+		
+		slp.add(new Contact());
+		assertTrue(myListener.hasChanged());
+		
+		Person originalPerson = (Person) transformer.getOriginalBean(personFx);
+		int size = originalPerson.getContacts().size();
+		
+		assertTrue(size == iSize + 1);
+	}
+	
+	private class MyListener implements ChangeListener<ObservableList<Contact>> {
+		
+		private boolean changed = false;
+
+		@Override
+		public void changed(ObservableValue<? extends ObservableList<Contact>> observable,
+				ObservableList<Contact> oldValue, ObservableList<Contact> newValue) {
+			
+			changed = true;
+		}
+		
+		public boolean hasChanged(){
+			return changed;
+		}
+	}
+	
+	@Test
 	public void testProxyToFXBeanAndBackToOriginal() {
 		FxSerialsContext transformer = new FxSerialsContext();
 		
-		Person person = new Person();
-		person.setName("Carlos Martins");
-		person.setEmail("carlos@martins.net");
-		person.setDateOfBirth(LocalDate.of(1967, 10, 1));
-		Address address = new Address();
-		address.setStreet("My Street");
-		address.setDoor("Number 1");
-		person.setAddress(address);
-		Contact phone=new Contact();
-		phone.setDescription("Mobile");
-		phone.setValue("918 333 222");
-		person.addContact(phone);
+		Person person = createPerson();
 
 		Person personFx = transformer.getProxy(person);
 		

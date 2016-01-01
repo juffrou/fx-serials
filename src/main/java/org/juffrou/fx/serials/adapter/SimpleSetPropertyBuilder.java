@@ -22,7 +22,7 @@ public class SimpleSetPropertyBuilder {
 		
 		Set<?> collection = (Set<?>) builderHelper.getCollection();
 		ObservableSet<?> os = collection != null ? FXCollections.observableSet(collection) : FXCollections.observableSet();
-		SimpleSetProperty<?> slp = new SimpleSetProperty(os);
+		SimpleSetProperty<?> slp = new SimpleSetProperty(builderHelper.getBean(), builderHelper.getName(), os);
 		
 		return slp;
 	}

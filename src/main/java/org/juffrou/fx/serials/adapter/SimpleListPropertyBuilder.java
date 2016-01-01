@@ -22,7 +22,7 @@ public class SimpleListPropertyBuilder {
 		
 		List<?> collection = (List<?>) builderHelper.getCollection();
 		ObservableList<?> ol = collection != null ? FXCollections.observableList(collection) : FXCollections.observableArrayList();
-		SimpleListProperty<?> slp = new SimpleListProperty(ol);
+		SimpleListProperty<?> slp = new SimpleListProperty(builderHelper.getBean(), builderHelper.getName(), ol);
 		
 		return slp;
 	}
