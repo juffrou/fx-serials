@@ -68,7 +68,9 @@ public class FxSerialsContext {
 			out.close();
 			
 			FxProxyCreatorInputStream fxInputStream = new FxProxyCreatorInputStream(new ByteArrayInputStream(bos.toByteArray()), proxyBuilder, builderCache, bwFactory);
-			return (T) fxInputStream.readObject();
+			Object beanProxy = fxInputStream.readObject();
+			fxInputStream.close();
+			return (T) beanProxy;
 			
 		} catch (IOException | ClassNotFoundException e) {
 			throw new FxTransformerException("Error deserializing bean", e);

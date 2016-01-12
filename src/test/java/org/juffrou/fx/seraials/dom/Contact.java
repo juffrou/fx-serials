@@ -6,9 +6,16 @@ public class Contact implements JFXSerializable {
 
 	private static final long serialVersionUID = -2520658029258402172L;
 
+	private Person person;
 	private String description;
 	private String value;
 	
+	public Person getPerson() {
+		return person;
+	}
+	public void setPerson(Person person) {
+		this.person = person;
+	}
 	public String getDescription() {
 		return description;
 	}

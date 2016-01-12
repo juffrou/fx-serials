@@ -218,9 +218,11 @@ public class FxSerialsUtilTestCase {
 		FxSerialsContext transformer = new FxSerialsContext();
 		
 		Person person = createPerson();
+		assertTrue(person == person.getContacts().get(0).getPerson());
 
 		Person personFx = transformer.getProxy(person);
-		
+		assertTrue("person proxy has wrong object references", personFx == personFx.getContacts().get(0).getPerson());
+
 		assertNotNull(personFx);
 		assertTrue(JFXProxy.class.isAssignableFrom(personFx.getClass()));
 		
@@ -228,7 +230,7 @@ public class FxSerialsUtilTestCase {
 		property.setValue("Gugas");
 
 		Person originalPerson = (Person) transformer.getOriginalBean(personFx);
-		
+		assertTrue("person original has wrong object references", originalPerson == originalPerson.getContacts().get(0).getPerson());
 		assertEquals("Gugas", originalPerson.getName());
 		
 		Person secondProxy = transformer.getProxy(personFx);

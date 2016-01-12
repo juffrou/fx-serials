@@ -63,6 +63,7 @@ public class Person implements JFXSerializable {
 	public void addContact(Contact contact) {
 		if(contacts == null)
 			setContacts(new ArrayList<Contact>());
+		contact.setPerson(this);
 		contacts.add(contact);
 	}
 	public Set<String> getNicknames() {
