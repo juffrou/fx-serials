@@ -3,28 +3,27 @@ package org.juffrou.fx.serials;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javafx.beans.property.ReadOnlyProperty;
-import net.sf.juffrou.reflect.BeanWrapperFactory;
-import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
-
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.FxProxyInstantiationException;
 import org.juffrou.fx.serials.error.FxTransformerException;
 import org.juffrou.fx.serials.error.ObjectIsNotFxProxyException;
-import org.juffrou.fx.serials.io.FxProxyRemoverInputStream;
-import org.juffrou.fx.serials.io.FxProxyRemoverOutputStream;
 import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
 import org.juffrou.fx.serials.io.FxProxyCreatorOutputStream;
+import org.juffrou.fx.serials.io.FxProxyRemoverInputStream;
+import org.juffrou.fx.serials.io.FxProxyRemoverOutputStream;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
+import javafx.beans.property.ReadOnlyProperty;
+import net.sf.juffrou.reflect.BeanWrapperFactory;
+import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
 
 /**
  * Transforms a traditional Java Bean into a JavaFX2 Bean.

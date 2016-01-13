@@ -76,29 +76,11 @@ Quick Start
 
 JavaFX2 beans can be obtained in two ways:
 
-- Deserializing an object stream containing traditional Java Beans
 - Using `FxSerialsContext` to explicitly proxy one traditional Java Bean
-
-Deserializing example
+- Serializing and deserializing an object stream containing traditional Java Beans (useful for RMI or HTTP Remoting)
 
 Given a `Person` class which implements the `JFXSerializable` interface:
 
-```java
-
-	Person person = new Person();
-	person.setName("Carlos Martins");
-
-    // Serialize person to a file
-	FileOutputStream fileOut = new FileOutputStream("person.ser");
-	ObjectOutputStream out = new ObjectOutputStream(fileOut);
-	out.writeObject(person);
-	out.close();
-	fileOut.close();
-
-	// Read the serialized person into a JavaFX2 person
-	FxProxyCreatorInputStream fxInputStream = new FxProxyCreatorInputStream(new FileInputStream("person.ser"););
-    Person personFx = (Person) fxInputStream.readObject();
-```
 
 FxSerialsContext example:
 
@@ -110,6 +92,26 @@ FxSerialsContext example:
 	person.setName("Carlos Martins");
 	
 	Person personFx = transformer.getProxy(person);
+```
+
+Serializing-Deserializing example
+
+```java
+
+	Person person = new Person();
+	person.setName("Carlos Martins");
+
+    // Serialize person to a file
+	FileOutputStream fileOut = new FileOutputStream("person.ser");
+	FxProxyCreatorOutputStream out = new FxProxyCreatorOutputStream(fileOut);
+	out.writeObject(person);
+	out.close();
+	fileOut.close();
+
+	// Read the serialized person into a JavaFX2 person
+	FxProxyCreatorInputStream fxInputStream = new FxProxyCreatorInputStream(new FileInputStream("person.ser"););
+    Person personFx = (Person) fxInputStream.readObject();
+    fxInputStream.close();
 ```
 
 

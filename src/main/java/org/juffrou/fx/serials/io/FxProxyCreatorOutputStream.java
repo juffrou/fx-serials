@@ -12,9 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import net.sf.juffrou.reflect.BeanWrapperContext;
 import net.sf.juffrou.reflect.BeanWrapperFactory;
+import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
 import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
 public class FxProxyCreatorOutputStream extends ObjectOutputStream {
@@ -30,6 +32,10 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 	// Factory for creating bean wrapper contexts to read the normal classes
 	private final BeanWrapperFactory bwFactory;
 
+	public FxProxyCreatorOutputStream(OutputStream out) throws IOException {
+		this(out, new FxSerialsProxyBuilder(), HashBiMap.create(), new DefaultBeanWrapperFactory());
+	}
+	
 	public FxProxyCreatorOutputStream(OutputStream out, FxSerialsProxyBuilder proxyBuilder,
 			BiMap<Class<?>, Class<?>> builderCache, BeanWrapperFactory bwFactory) throws IOException {
 		super(out);
