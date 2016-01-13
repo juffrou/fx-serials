@@ -2,10 +2,9 @@ package org.juffrou.fx.serials.io;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 
-import org.juffrou.fx.serials.JFXSerializable;
+import org.juffrou.fx.serials.JFXProxy;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.slf4j.Logger;
@@ -17,9 +16,9 @@ import net.sf.juffrou.reflect.BeanWrapperContext;
 import net.sf.juffrou.reflect.BeanWrapperFactory;
 import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
-public class FxProxyCreatorOutputStream extends ObjectOutputStream {
+public class FxProxyRemoverOutputStream extends ObjectOutputStream {
 
-	private static final Logger logger = LoggerFactory.getLogger(FxProxyCreatorOutputStream.class);
+	private static final Logger logger = LoggerFactory.getLogger(FxProxyRemoverOutputStream.class);
 
 	// The builder who builds java fx proxys
 	private final FxSerialsProxyBuilder proxyBuilder;
@@ -30,7 +29,7 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 	// Factory for creating bean wrapper contexts to read the normal classes
 	private final BeanWrapperFactory bwFactory;
 
-	public FxProxyCreatorOutputStream(OutputStream out, FxSerialsProxyBuilder proxyBuilder,
+	public FxProxyRemoverOutputStream(OutputStream out, FxSerialsProxyBuilder proxyBuilder,
 			BiMap<Class<?>, Class<?>> builderCache, BeanWrapperFactory bwFactory) throws IOException {
 		super(out);
 		this.proxyBuilder = proxyBuilder;
@@ -42,42 +41,41 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 	@Override
 	protected Object replaceObject(Object obj) throws IOException {
 
-		Class<? extends Object> resolveClass = obj.getClass();
-		if (implementsFxSerials(resolveClass)) {
+		Class<? extends Object> proxyClass = obj.getClass();
+		if (implementsFxProxy(proxyClass)) {
 			
-			Class<?> proxyClass = proxyCache.get(resolveClass);
-			if (proxyClass == null) {
+			Class<?> originalClass = proxyCache.inverse().get(proxyClass);
+			if (originalClass == null) {
 				
 				if (logger.isDebugEnabled())
-					logger.debug("resolving " + resolveClass.getName());
+					logger.debug("resolving proxy " + proxyClass.getName());
 
-				ObjectStreamClass desc = ObjectStreamClass.lookup(resolveClass);
-				proxyClass = proxyBuilder.buildFXSerialsProxy(resolveClass, desc.getSerialVersionUID());
-				
-				proxyCache.put(resolveClass, proxyClass);
-				
+				originalClass = proxyBuilder.cleanFXSerialsProxy(proxyClass);
+
+				proxyCache.put(originalClass, proxyClass);
+
 				if (logger.isDebugEnabled())
-					logger.debug("resolved with proxy " + proxyClass.getName());
+					logger.debug("resolved original " + originalClass.getName());
 			}
 			
 			try {
 				
 				// copy the properties from obj to proxy
-				BeanWrapperContext context = bwFactory.getBeanWrapperContext(resolveClass);
+				BeanWrapperContext context = bwFactory.getBeanWrapperContext(originalClass);
 				JuffrouBeanWrapper srcWrapper = new JuffrouBeanWrapper(context, obj);
-				Object proxyObj = proxyClass.newInstance();
-				JuffrouBeanWrapper dstWrapper = new JuffrouBeanWrapper(context, proxyObj);
+				Object originalObj = originalClass.newInstance();
+				JuffrouBeanWrapper dstWrapper = new JuffrouBeanWrapper(context, originalObj);
 				for (String propName : srcWrapper.getPropertyNames())
 					dstWrapper.setValue(propName, srcWrapper.getValue(propName));
 				
-				obj = proxyObj;
+				obj = originalObj;
 			}
 			catch (SecurityException | IllegalAccessException | IllegalArgumentException e) {
 				throw new CannotInitializeFxPropertyListException("Error calling initPropertiesList() on "
 						+ obj.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			} catch (InstantiationException e) {
 				throw new CannotInitializeFxPropertyListException(
-						"Error instatiating proxy class " + proxyClass.getName() + ": " + e.getMessage(), e);
+						"Error instatiating proxy class " + originalClass.getName() + ": " + e.getMessage(), e);
 			}
 			
 			
@@ -93,9 +91,9 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 	 *            class to test
 	 * @return true if the class declares FxSerials implementation
 	 */
-	private boolean implementsFxSerials(Class<?> clazz) {
+	private boolean implementsFxProxy(Class<?> clazz) {
 		for (Class<?> itf : clazz.getInterfaces())
-			if (itf == JFXSerializable.class)
+			if (itf == JFXProxy.class)
 				return true;
 		return false;
 	}

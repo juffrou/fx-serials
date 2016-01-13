@@ -19,6 +19,7 @@ import org.juffrou.fx.serials.error.FxProxyInstantiationException;
 import org.juffrou.fx.serials.error.FxTransformerException;
 import org.juffrou.fx.serials.error.ObjectIsNotFxProxyException;
 import org.juffrou.fx.serials.io.FxProxyRemoverInputStream;
+import org.juffrou.fx.serials.io.FxProxyRemoverOutputStream;
 import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
 import org.juffrou.fx.serials.io.FxProxyCreatorOutputStream;
 
@@ -103,7 +104,7 @@ public class FxSerialsContext {
 			throw new IllegalArgumentException("bean must implement FxSerialsProxy");
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(bos);
+			FxProxyRemoverOutputStream out = new FxProxyRemoverOutputStream(bos, proxyBuilder, builderCache, bwFactory);
 			out.writeObject(proxy);
 			out.flush();
 			out.close();

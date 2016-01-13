@@ -350,6 +350,10 @@ public class FxSerialsProxyBuilder {
 			throw new OriginalClassNotFoundException();
 		}
 	}
+	
+	public boolean isFXProxy(String className) {
+		return className.contains("._fx_.");
+	}
 
 	/**
 	 * Adds the methods defined in the interface FxSerialsProxy and adds the

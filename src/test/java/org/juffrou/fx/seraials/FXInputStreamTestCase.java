@@ -15,7 +15,6 @@ import org.juffrou.fx.seraials.dom.Address;
 import org.juffrou.fx.seraials.dom.Contact;
 import org.juffrou.fx.seraials.dom.Person;
 import org.juffrou.fx.serials.JFXProxy;
-import org.juffrou.fx.serials.JFXSerializable;
 import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
 import org.junit.Test;
 
@@ -142,37 +141,4 @@ public class FXInputStreamTestCase {
 		}
 	}
 	
-	@Test
-	public void testResolveProxy() {
-		FxProxyCreatorInputStream fxInputStream = null;
-		FileInputStream fileIn = null;
-
-		try {
-			
-			writePerson();
-			fileIn = new FileInputStream("person.ser");
-			fxInputStream = new FxProxyCreatorInputStream(fileIn);
-			
-			// Auto-proxy person
-			
-			Class<?> personClass = fxInputStream.resolveProxyClass(new String[] {JFXSerializable.class.getName()});
-			
-			// Test the proxy returned
-			System.out.println("Received a " + personClass.getName());
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		finally {
-			try {
-				if(fxInputStream != null)
-					fxInputStream.close();
-				if(fileIn != null)
-					fileIn.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }

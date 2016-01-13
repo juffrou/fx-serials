@@ -3,11 +3,10 @@ package org.juffrou.fx.serials.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectStreamClass;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.juffrou.fx.serials.JFXSerializable;
+import org.juffrou.fx.serials.JFXProxy;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.slf4j.Logger;
@@ -16,10 +15,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import net.sf.juffrou.reflect.BeanWrapperContext;
 import net.sf.juffrou.reflect.BeanWrapperFactory;
 import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
-import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
 /**
  * Deserializes traditional Java Beans into JavaFX2 Beans.<br>
@@ -61,6 +58,7 @@ public class FxProxyCreatorInputStream extends ObjectInputStream {
 		enableResolveObject(true);
 	}
 
+	/*
 	@Override
 	protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
 
@@ -80,59 +78,30 @@ public class FxProxyCreatorInputStream extends ObjectInputStream {
 
 		return resolveClass;
 	}
+	*/
 
 	@Override
 	protected Object resolveObject(Object obj) throws IOException {
 
 		// If the object is an FxSerialsProxy instance, then initialize its
 		// properties list
-		Class<?> proxyClass = proxyCache.get(obj.getClass());
-		if (proxyClass != null) {
+		if(JFXProxy.class.isAssignableFrom(obj.getClass())) {
 			try {
 
-				// copy the properties from obj to proxy
-				BeanWrapperContext context = bwFactory.getBeanWrapperContext(obj.getClass());
-				JuffrouBeanWrapper srcWrapper = new JuffrouBeanWrapper(context, obj);
-				Object proxyObj = proxyClass.newInstance();
-				JuffrouBeanWrapper dstWrapper = new JuffrouBeanWrapper(context, proxyObj);
-				for (String propName : srcWrapper.getPropertyNames())
-					dstWrapper.setValue(propName, srcWrapper.getValue(propName));
-
+				Class<?> proxyClass = obj.getClass();
+				
 				// initialize the properties map
 				Method method = proxyClass.getMethod("initPropertiesList", null);
-				method.invoke(proxyObj, null);
-
-				return proxyObj;
+				method.invoke(obj, null);
 
 			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
 				throw new CannotInitializeFxPropertyListException("Error calling initPropertiesList() on "
 						+ obj.getClass().getSimpleName() + ": " + e.getMessage(), e);
-			} catch (InstantiationException e) {
-				throw new CannotInitializeFxPropertyListException(
-						"Error instatiating proxy class " + proxyClass.getName() + ": " + e.getMessage(), e);
 			}
 		}
 
 		return obj;
 	}
 
-	@Override
-	public Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
-		return super.resolveProxyClass(interfaces);
-	}
-
-	/**
-	 * Test if a class declares to implement the interface FxSerials
-	 * 
-	 * @param clazz
-	 *            class to test
-	 * @return true if the class declares FxSerials implementation
-	 */
-	private boolean implementsFxSerials(Class<?> clazz) {
-		for (Class<?> itf : clazz.getInterfaces())
-			if (itf == JFXSerializable.class)
-				return true;
-		return false;
-	}
 }
