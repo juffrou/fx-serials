@@ -20,6 +20,7 @@ import org.juffrou.fx.serials.error.FxTransformerException;
 import org.juffrou.fx.serials.error.ObjectIsNotFxProxyException;
 import org.juffrou.fx.serials.io.FxProxyRemoverInputStream;
 import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
+import org.juffrou.fx.serials.io.FxProxyCreatorOutputStream;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -62,7 +63,7 @@ public class FxSerialsContext {
 			return bean;
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(bos);
+			FxProxyCreatorOutputStream out = new FxProxyCreatorOutputStream(bos, proxyBuilder, builderCache, bwFactory);
 			out.writeObject(bean);
 			out.flush();
 			out.close();

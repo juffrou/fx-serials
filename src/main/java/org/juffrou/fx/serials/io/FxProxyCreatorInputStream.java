@@ -6,13 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.sf.juffrou.reflect.BeanWrapperContext;
-import net.sf.juffrou.reflect.BeanWrapperFactory;
-import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
-import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
 import org.juffrou.fx.serials.JFXSerializable;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
@@ -22,6 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
+import net.sf.juffrou.reflect.BeanWrapperContext;
+import net.sf.juffrou.reflect.BeanWrapperFactory;
+import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
+import net.sf.juffrou.reflect.JuffrouBeanWrapper;
 
 /**
  * Deserializes traditional Java Beans into JavaFX2 Beans.<br>
