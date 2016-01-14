@@ -8,6 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.juffrou.fx.serials.error.FxSerialsProxyCreationException;
+import org.juffrou.fx.serials.error.OriginalClassNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -18,15 +26,6 @@ import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
-
-import org.juffrou.fx.serials.error.FxSerialsProxyCreationException;
-import org.juffrou.fx.serials.error.OriginalClassNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
-import javafx.collections.ObservableSet;
 
 /**
  * Creates Java Classes at runtime.
@@ -41,6 +40,10 @@ import javafx.collections.ObservableSet;
 public class FxSerialsProxyBuilder {
 
 	private static final Logger logger = LoggerFactory.getLogger(FxSerialsProxyBuilder.class);
+	
+	public static final String JFX_PROXY_PACKAGE_NAME = "_$$_JFX_";
+	public static final String JFX_PROXY_PACKAGE_NAME_WITH_DOTS = "._$$_JFX_.";
+	public static final String JFX_PROXY_PACKAGE_NAME_WITH_END_DOT = "_$$_JFX_.";
 
 	private static final int HASH_STRING = -1808118735;
 	private static final int HASH_INTEGER = -672261858;
@@ -265,7 +268,7 @@ public class FxSerialsProxyBuilder {
 			collectFieldInfo(fields, fxSerials);
 			String name = fxSerials.getName();
 			int i = name.lastIndexOf('.');
-			String pck = (i == -1 ? "fx_." : name.substring(0, i) + "._fx_.");
+			String pck = (i == -1 ? JFX_PROXY_PACKAGE_NAME_WITH_END_DOT : name.substring(0, i) + JFX_PROXY_PACKAGE_NAME_WITH_DOTS);
 			name = pck + name.substring(i + 1);
 			CtClass ctClass = null;
 			try {
@@ -276,7 +279,7 @@ public class FxSerialsProxyBuilder {
 					if (logger.isDebugEnabled())
 						logger.debug("Found existing proxy " + name);
 
-					return (Class<? extends T>) Class.forName(name);
+					return (Class<? extends T>) Class.forName(name, true, latestUserDefinedLoader());
 				}
 
 				if (logger.isDebugEnabled())
@@ -342,7 +345,7 @@ public class FxSerialsProxyBuilder {
 	public Class<?> cleanFXSerialsProxy(Class<?> fxSerialsProxyClass) {
 
 		String originalClassName = fxSerialsProxyClass.getName();
-		originalClassName = originalClassName.replace("_fx_.", "");
+		originalClassName = originalClassName.replace(JFX_PROXY_PACKAGE_NAME_WITH_END_DOT, "");
 		try {
 			Class<?> originalClass = Class.forName(originalClassName);
 			return originalClass;
@@ -350,9 +353,29 @@ public class FxSerialsProxyBuilder {
 			throw new OriginalClassNotFoundException();
 		}
 	}
-	
+
+	/**
+	 * Returns the class that originated the FxSerialsProxy passed
+	 * 
+	 * @param fxSerialsProxyClassName
+	 * @return
+	 */
+	public Class<?> cleanFXSerialsProxy(String fxSerialsProxyClassName) {
+
+		if(!fxSerialsProxyClassName.contains(JFX_PROXY_PACKAGE_NAME_WITH_END_DOT))
+			throw new IllegalArgumentException("fxSerialsProxyClassName is not an JFXProxy");
+		
+		String originalClassName = fxSerialsProxyClassName.replace(JFX_PROXY_PACKAGE_NAME_WITH_END_DOT, "");
+		try {
+			Class<?> originalClass = Class.forName(originalClassName, true, latestUserDefinedLoader());
+			return originalClass;
+		} catch (ClassNotFoundException e) {
+			throw new OriginalClassNotFoundException();
+		}
+	}
+
 	public boolean isFXProxy(String className) {
-		return className.contains("._fx_.");
+		return className.contains(JFX_PROXY_PACKAGE_NAME_WITH_END_DOT);
 	}
 
 	/**
@@ -433,6 +456,21 @@ public class FxSerialsProxyBuilder {
 			}
 		}
 	}
+
+    /**
+     * Returns the first non-null class loader (not counting class loaders of
+     * generated reflection implementation classes) up the execution stack, or
+     * null if only code from the null class loader is on the stack.  This
+     * method is also called via reflection by the following RMI-IIOP class:
+     *
+     *     com.sun.corba.se.internal.util.JDKClassLoader
+     *
+     * This method should not be removed or its signature changed without
+     * corresponding modifications to the above class.
+     */
+    private static ClassLoader latestUserDefinedLoader() {
+        return sun.misc.VM.latestUserDefinedLoader();
+    }
 
 	private class FieldInfo {
 		public Field field;

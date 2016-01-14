@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 
+import org.juffrou.fx.serials.core.FXProxyCache;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 import net.sf.juffrou.reflect.BeanWrapperFactory;
 import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
@@ -28,7 +26,7 @@ public class FxProxyRemoverInputStream extends ObjectInputStream {
 	private final FxSerialsProxyBuilder proxyBuilder;
 
 	// A Bimap with original class as key and respective proxy class as value.
-	private final BiMap<Class<?>, Class<?>> proxyCache;
+	private final FXProxyCache proxyCache;
 
 	// Factory for creating bean wrapper contexts to read the normal classes
 	private final BeanWrapperFactory bwFactory;
@@ -36,16 +34,16 @@ public class FxProxyRemoverInputStream extends ObjectInputStream {
 	protected FxProxyRemoverInputStream() throws IOException, SecurityException {
 		super();
 		this.proxyBuilder = new FxSerialsProxyBuilder();
-		this.proxyCache = HashBiMap.create();
+		this.proxyCache = new FXProxyCache();
 		this.bwFactory = new DefaultBeanWrapperFactory();
 	}
 
 	public FxProxyRemoverInputStream(InputStream in) throws IOException {
-		this(in, new FxSerialsProxyBuilder(), HashBiMap.create(), new DefaultBeanWrapperFactory());
+		this(in, new FxSerialsProxyBuilder(), new FXProxyCache(), new DefaultBeanWrapperFactory());
 	}
 
 	public FxProxyRemoverInputStream(InputStream in, FxSerialsProxyBuilder proxyBuilder,
-			BiMap<Class<?>, Class<?>> builderCache, BeanWrapperFactory bwFactory) throws IOException {
+			FXProxyCache builderCache, BeanWrapperFactory bwFactory) throws IOException {
 		super(in);
 		this.proxyBuilder = proxyBuilder;
 		this.proxyCache = builderCache;

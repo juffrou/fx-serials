@@ -5,12 +5,11 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 import org.juffrou.fx.serials.JFXProxy;
+import org.juffrou.fx.serials.core.FXProxyCache;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.BiMap;
 
 import net.sf.juffrou.reflect.BeanWrapperContext;
 import net.sf.juffrou.reflect.BeanWrapperFactory;
@@ -24,13 +23,13 @@ public class FxProxyRemoverOutputStream extends ObjectOutputStream {
 	private final FxSerialsProxyBuilder proxyBuilder;
 
 	// A Bimap with Class as key and Proxy Class as Value
-	private final BiMap<Class<?>, Class<?>> proxyCache;
+	private final FXProxyCache proxyCache;
 
 	// Factory for creating bean wrapper contexts to read the normal classes
 	private final BeanWrapperFactory bwFactory;
 
 	public FxProxyRemoverOutputStream(OutputStream out, FxSerialsProxyBuilder proxyBuilder,
-			BiMap<Class<?>, Class<?>> builderCache, BeanWrapperFactory bwFactory) throws IOException {
+			FXProxyCache builderCache, BeanWrapperFactory bwFactory) throws IOException {
 		super(out);
 		this.proxyBuilder = proxyBuilder;
 		this.proxyCache = builderCache;
@@ -44,7 +43,7 @@ public class FxProxyRemoverOutputStream extends ObjectOutputStream {
 		Class<? extends Object> proxyClass = obj.getClass();
 		if (implementsFxProxy(proxyClass)) {
 			
-			Class<?> originalClass = proxyCache.inverse().get(proxyClass);
+			Class<?> originalClass = proxyCache.getOriginalFromProxyClass(proxyClass);
 			if (originalClass == null) {
 				
 				if (logger.isDebugEnabled())

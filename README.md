@@ -32,7 +32,7 @@ Its corresponding JavaFX2 Bean will extend it and add a `JavaBeanStringProperty`
 
 ```java
 
-	package example.fxseraials._fx_
+	package example.fxseraials._$$_JFX_
 
 	public class Person extends example.fxseraials.Person implements JFXProxy {
 

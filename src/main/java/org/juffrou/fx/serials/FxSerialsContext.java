@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.juffrou.fx.serials.core.FXProxyCache;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.FxProxyInstantiationException;
 import org.juffrou.fx.serials.error.FxTransformerException;
@@ -17,9 +18,6 @@ import org.juffrou.fx.serials.io.FxProxyCreatorInputStream;
 import org.juffrou.fx.serials.io.FxProxyCreatorOutputStream;
 import org.juffrou.fx.serials.io.FxProxyRemoverInputStream;
 import org.juffrou.fx.serials.io.FxProxyRemoverOutputStream;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 import javafx.beans.property.ReadOnlyProperty;
 import net.sf.juffrou.reflect.BeanWrapperFactory;
@@ -33,7 +31,7 @@ import net.sf.juffrou.reflect.DefaultBeanWrapperFactory;
 public class FxSerialsContext {
 	
 	private final FxSerialsProxyBuilder proxyBuilder = new FxSerialsProxyBuilder();
-	private final BiMap<Class<?>, Class<?>> builderCache = HashBiMap.create();
+	private final FXProxyCache builderCache = new FXProxyCache();
 	private final BeanWrapperFactory bwFactory = new DefaultBeanWrapperFactory();
 
 	/**

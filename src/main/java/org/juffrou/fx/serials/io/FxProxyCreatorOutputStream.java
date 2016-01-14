@@ -6,13 +6,11 @@ import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 
 import org.juffrou.fx.serials.JFXSerializable;
+import org.juffrou.fx.serials.core.FXProxyCache;
 import org.juffrou.fx.serials.core.FxSerialsProxyBuilder;
 import org.juffrou.fx.serials.error.CannotInitializeFxPropertyListException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 import net.sf.juffrou.reflect.BeanWrapperContext;
 import net.sf.juffrou.reflect.BeanWrapperFactory;
@@ -27,17 +25,17 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 	private final FxSerialsProxyBuilder proxyBuilder;
 
 	// A Bimap with Class as key and Proxy Class as Value
-	private final BiMap<Class<?>, Class<?>> proxyCache;
+	private final FXProxyCache proxyCache;
 
 	// Factory for creating bean wrapper contexts to read the normal classes
 	private final BeanWrapperFactory bwFactory;
 
 	public FxProxyCreatorOutputStream(OutputStream out) throws IOException {
-		this(out, new FxSerialsProxyBuilder(), HashBiMap.create(), new DefaultBeanWrapperFactory());
+		this(out, new FxSerialsProxyBuilder(), new FXProxyCache(), new DefaultBeanWrapperFactory());
 	}
 	
 	public FxProxyCreatorOutputStream(OutputStream out, FxSerialsProxyBuilder proxyBuilder,
-			BiMap<Class<?>, Class<?>> builderCache, BeanWrapperFactory bwFactory) throws IOException {
+			FXProxyCache builderCache, BeanWrapperFactory bwFactory) throws IOException {
 		super(out);
 		this.proxyBuilder = proxyBuilder;
 		this.proxyCache = builderCache;
@@ -51,11 +49,11 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 		Class<? extends Object> resolveClass = obj.getClass();
 		if (implementsFxSerials(resolveClass)) {
 			
-			Class<?> proxyClass = proxyCache.get(resolveClass);
+			Class<?> proxyClass = proxyCache.getProxyFromOriginalClass(resolveClass);
 			if (proxyClass == null) {
 				
 				if (logger.isDebugEnabled())
-					logger.debug("resolving " + resolveClass.getName());
+					logger.debug("resolving proxy of " + resolveClass.getName());
 
 				ObjectStreamClass desc = ObjectStreamClass.lookup(resolveClass);
 				proxyClass = proxyBuilder.buildFXSerialsProxy(resolveClass, desc.getSerialVersionUID());
@@ -63,7 +61,7 @@ public class FxProxyCreatorOutputStream extends ObjectOutputStream {
 				proxyCache.put(resolveClass, proxyClass);
 				
 				if (logger.isDebugEnabled())
-					logger.debug("resolved with proxy " + proxyClass.getName());
+					logger.debug("resolved: " + proxyClass.getName());
 			}
 			
 			try {
