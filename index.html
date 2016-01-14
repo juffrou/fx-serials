@@ -1,46 +1,41 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
-    <!--[if lt IE 9]>
+<head>
+	<meta charset="utf-8" />
+	<meta content="chrome=1" http-equiv="X-UA-Compatible" />
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport" />
+	<link href="https://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css" />
+	<link href="stylesheets/stylesheet.css" media="screen" rel="stylesheet" type="text/css" />
+	<link href="stylesheets/pygment_trac.css" media="screen" rel="stylesheet" type="text/css" />
+	<link href="stylesheets/print.css" media="print" rel="stylesheet" type="text/css" /><!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+	<title>Fx-serials by juffrou</title>
+</head>
+<body>
+<header>
+<div class="inner">
+<h1>Fx-serials</h1>
 
-    <title>Fx-serials by juffrou</title>
-  </head>
+<h2>Automagical JavaFX2 Beans</h2>
+<a class="button" href="https://github.com/juffrou/fx-serials"><small>View project on</small> GitHub</a></div>
+</header>
 
-  <body>
-    <header>
-      <div class="inner">
-        <h1>Fx-serials</h1>
-        <h2>Automagical JavaFX2 Beans</h2>
-        <a href="https://github.com/juffrou/fx-serials" class="button"><small>View project on</small> GitHub</a>
-      </div>
-    </header>
-
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
-<a id="juffrou-fxserials" class="anchor" href="#juffrou-fxserials" aria-hidden="true"><span class="octicon octicon-link"></span></a>Juffrou FXSerials</h1>
+<div id="content-wrapper">
+<div class="inner clearfix">
+<section id="main-content">
+<h1>Juffrou FXSerials</h1>
 
 <p><em>Automagical JavaFX2 Beans</em></p>
 
 <p>Copyright (C) 2014- by Carlos Martins, All rights reserved.</p>
 
-<p>This library allows you to transform traditional Java Beans into JavaFX2 Beans by adding property methods which return the appropriate JavaFX2 property type for each bean attribute. 
-The transformed JavaFX2 beans can later on by transformed back into their original Java Beans.</p>
+<p>This library allows you to transform traditional Java Beans into JavaFX2 Beans by adding property methods which return the appropriate JavaFX2 property type for each bean attribute. The transformed JavaFX2 beans can later on by transformed back into their original Java Beans.</p>
 
 <p>Given a traditional java bean with a <code>name</code> attribute like the following:</p>
 
-<div class="highlight highlight-java"><pre>
+<div class="highlight highlight-java">
+<pre>
     <span class="k">package</span> <span class="k">example.fxseraials</span>
 
     <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span> <span class="k">implements</span> <span class="no">JFXSerializable</span> {
@@ -55,11 +50,13 @@ The transformed JavaFX2 beans can later on by transformed back into their origin
         <span class="k">public</span> <span class="kt">void</span> <span class="nf">setName</span>(<span class="kt">String</span> <span class="nv">name</span>) {
             <span class="nb">this</span><span class="o">.</span>name <span class="o">=</span> name;
         }
-    }</pre></div>
+    }</pre>
+</div>
 
 <p>Its corresponding JavaFX2 Bean will extend it and add a <code>JavaBeanStringProperty</code> for the <code>name</code> attribute called <code>nameProperty</code>. If it were written in Java source code it would look like the following:</p>
 
-<div class="highlight highlight-java"><pre>
+<div class="highlight highlight-java">
+<pre>
     <span class="k">package</span> <span class="k">example.fxseraials._fx_</span>
 
     <span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span> <span class="k">extends</span> <span class="no">example.fxseraials<span class="o">.</span>Person</span> <span class="k">implements</span> <span class="no">JFXProxy</span> {
@@ -69,15 +66,15 @@ The transformed JavaFX2 beans can later on by transformed back into their origin
         <span class="k">private</span> <span class="kt">Map&lt;<span class="kt">String</span>, <span class="kt">JavaBeanStringProperty</span>&gt;</span> __fx_properties <span class="o">=</span> <span class="k">new</span> <span class="kt">HashMap&lt;<span class="kt">String</span>, <span class="kt">JavaBeanStringProperty</span>&gt;</span>();
 
         <span class="k">public</span> <span class="kt">ReadOnlyJavaBeanProperty</span> <span class="nf">getProperty</span>(<span class="kt">String</span> <span class="nv">propertyName</span>) {
-            <span class="kt">Method</span> m <span class="o">=</span> getClass()<span class="o">.</span>getMethod(propertyName <span class="o">+</span> <span class="s2">"Property"</span>, <span class="kc">null</span>);
+            <span class="kt">Method</span> m <span class="o">=</span> getClass()<span class="o">.</span>getMethod(propertyName <span class="o">+</span> <span class="s2">&quot;Property&quot;</span>, <span class="kc">null</span>);
             <span class="k">return</span> (<span class="kt">ReadOnlyJavaBeanProperty</span>) m<span class="o">.</span>invoke(<span class="nb">this</span>, <span class="kc">null</span>);
         }
 
         <span class="k">public</span> <span class="kt">JavaBeanStringProperty</span> <span class="nf">nameProperty</span>() {
-            <span class="kt">JavaBeanStringProperty</span> p <span class="o">=</span> (<span class="kt">JavaBeanStringProperty</span>) __fx_properties<span class="o">.</span>get(<span class="s2">"name"</span>);
+            <span class="kt">JavaBeanStringProperty</span> p <span class="o">=</span> (<span class="kt">JavaBeanStringProperty</span>) __fx_properties<span class="o">.</span>get(<span class="s2">&quot;name&quot;</span>);
             <span class="k">if</span> (p <span class="o">==</span> <span class="kc">null</span>) {
-                p <span class="o">=</span> <span class="kt">JavaBeanStringPropertyBuilder</span><span class="o">.</span>create()<span class="o">.</span>bean(<span class="nb">this</span>)<span class="o">.</span>name(<span class="s2">"name"</span>)<span class="o">.</span>getter(<span class="s2">"getName"</span>)<span class="o">.</span>setter(<span class="s2">"setName"</span>)<span class="o">.</span>build();
-                __fx_properties<span class="o">.</span>put(<span class="s2">"name"</span>, p);
+                p <span class="o">=</span> <span class="kt">JavaBeanStringPropertyBuilder</span><span class="o">.</span>create()<span class="o">.</span>bean(<span class="nb">this</span>)<span class="o">.</span>name(<span class="s2">&quot;name&quot;</span>)<span class="o">.</span>getter(<span class="s2">&quot;getName&quot;</span>)<span class="o">.</span>setter(<span class="s2">&quot;setName&quot;</span>)<span class="o">.</span>build();
+                __fx_properties<span class="o">.</span>put(<span class="s2">&quot;name&quot;</span>, p);
             }
             <span class="k">return</span> p;
         }
@@ -87,85 +84,81 @@ The transformed JavaFX2 beans can later on by transformed back into their origin
             nameProperty()<span class="o">.</span>fireValueChangedEvent();
         }
     }
-</pre></div>
+</pre>
+</div>
 
-<p>In a more complex <code>Person</code> bean - containing a list of <code>Address</code> beans and a reference to a <code>Nationality</code> bean for example, they would also be transformed into JavaFX2 beans. 
-In that case, the transformed <code>Person</code> would contain a list of transformed <code>Address</code> beans and a reference to a transformed <code>Nationality</code> bean.</p>
+<p>In a more complex <code>Person</code> bean - containing a list of <code>Address</code> beans and a reference to a <code>Nationality</code> bean for example, they would also be transformed into JavaFX2 beans. In that case, the transformed <code>Person</code> would contain a list of transformed <code>Address</code> beans and a reference to a transformed <code>Nationality</code> bean.</p>
 
-<p>The JavaFX2 bean classes are created by manipulating Java byte code and instantiated by the fx-serials library, so the property methods (namePropertyin the above example) are only available through introspection. 
-The good news is that the implemented <code>JFXProxy</code> interface defines a method which allows you to obtain any property:</p>
+<p>The JavaFX2 bean classes are created by manipulating Java byte code and instantiated by the fx-serials library, so the property methods (namePropertyin the above example) are only available through introspection. The good news is that the implemented <code>JFXProxy</code> interface defines a method which allows you to obtain any property:</p>
 
-<div class="highlight highlight-java"><pre>
-    <span class="k">public</span> <span class="kt">ReadOnlyJavaBeanProperty</span> getProperty(<span class="kt">String</span> propertyName);</pre></div>
+<div class="highlight highlight-java">
+<pre>
+    <span class="k">public</span> <span class="kt">ReadOnlyJavaBeanProperty</span> getProperty(<span class="kt">String</span> propertyName);</pre>
+</div>
 
 <h2>Quick Start</h2>
 
 <p>JavaFX2 beans can be obtained in two ways:</p>
 
 <ul>
-<li>Deserializing an object stream containing traditional Java Beans</li>
-<li>Using <code>FxSerialsContext</code> to explicitly proxy one traditional Java Bean</li>
+	<li>Using <code>FxSerialsContext</code> to explicitly proxy one traditional Java Bean</li>
+	<li>Serializing and deserializing an object stream containing traditional Java Beans (useful for RMI or HTTP Remoting)</li>
 </ul>
 
-<p>Deserializing example:</p>
 <p>Given a Person class which implements the JFXSerializable interface:</p>
 
-<div class="highlight highlight-java"><pre>
+<p>FxSerialsContext example:</p>
+
+<div class="highlight highlight-java">
+<pre>
+    <span class="kt">FxSerialsContext</span> transformer <span class="o">=</span> <span class="k">new</span> <span class="kt">FxSerialsContext</span>();
+
     <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
-    person<span class="o">.</span>setName(<span class="s2">"Carlos Martins"</span>);
-    <span class="kt">FileOutputStream</span> fileOut <span class="o">=</span> <span class="k">new</span> <span class="kt">FileOutputStream</span>(<span class="s2">"person.ser"</span>);
-    <span class="kt">ObjectOutputStream</span> out <span class="o">=</span> <span class="k">new</span> <span class="kt">ObjectOutputStream</span>(fileOut);
+    person<span class="o">.</span>setName(<span class="s2">&quot;Carlos Martins&quot;</span>);
+
+    <span class="kt">Person</span> personFx <span class="o">=</span> transformer<span class="o">.</span>getProxy(person);</pre>
+</div>
+
+<p>Deserializing example:</p>
+
+<div class="highlight highlight-java">
+<pre>
+    <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
+    person<span class="o">.</span>setName(<span class="s2">&quot;Carlos Martins&quot;</span>);
+    <span class="kt">FileOutputStream</span> fileOut <span class="o">=</span> <span class="k">new</span> <span class="kt">FileOutputStream</span>(<span class="s2">&quot;person.ser&quot;</span>);
+    <span class="kt">FxProxyCreatorOutputStream</span> out <span class="o">=</span> <span class="k">new</span> <span class="kt">FxProxyCreatorOutputStream</span>(fileOut);
     out<span class="o">.</span>writeObject(person);
     out<span class="o">.</span>close();
     fileOut<span class="o">.</span>close();
 
-    <span class="kt">FxProxyCreatorInputStream</span> fxInputStream <span class="o">=</span> <span class="k">new</span> <span class="kt">FxProxyCreatorInputStream</span>(<span class="k">new</span> <span class="kt">FileInputStream</span>(<span class="s2">"person.ser"</span>););
-    <span class="kt">Person</span> personFx <span class="o">=</span> (<span class="kt">Person</span>) fxInputStream<span class="o">.</span>readObject();</pre></div>
-
-<p>FxSerialsContext example:</p>
-
-<div class="highlight highlight-java"><pre>
-    <span class="kt">FxSerialsContext</span> transformer <span class="o">=</span> <span class="k">new</span> <span class="kt">FxSerialsContext</span>();
-
-    <span class="kt">Person</span> person <span class="o">=</span> <span class="k">new</span> <span class="kt">Person</span>();
-    person<span class="o">.</span>setName(<span class="s2">"Carlos Martins"</span>);
-
-    <span class="kt">Person</span> personFx <span class="o">=</span> transformer<span class="o">.</span>getProxy(person);</pre></div>
-
-
+    <span class="kt">FxProxyCreatorInputStream</span> fxInputStream <span class="o">=</span> <span class="k">new</span> <span class="kt">FxProxyCreatorInputStream</span>(<span class="k">new</span> <span class="kt">FileInputStream</span>(<span class="s2">&quot;person.ser&quot;</span>););
+    <span class="kt">Person</span> personFx <span class="o">=</span> (<span class="kt">Person</span>) fxInputStream<span class="o">.</span>readObject();
+    fxInputStream<span class="o">.</span>close();</pre>
+</div>
 
 <p>Note: FXSerials uses <a href="https://github.com/jboss-javassist/javassist" title="Javassist on Github">Javassist version 3</a></p>
 
 <p>This software is distributed under the Apache License Version 2.0.</p>
-        </section>
+</section>
 
-        <aside id="sidebar">
-          <a href="https://github.com/juffrou/fx-serials/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/juffrou/fx-serials/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+<aside id="sidebar"><a class="button" href="https://github.com/juffrou/fx-serials/zipball/master"><small>Download</small> .zip file </a> <a class="button" href="https://github.com/juffrou/fx-serials/tarball/master"> <small>Download</small> .tar.gz file </a>
 
-          <p class="repo-owner"><a href="https://github.com/juffrou/fx-serials"></a> is maintained by <a href="https://github.com/juffrou">juffrou</a>.</p>
+<p class="repo-owner">is maintained by <a href="https://github.com/juffrou">juffrou</a>.</p>
 
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
-    </div>
-
-            <script type="text/javascript">
+<p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+</aside>
+</div>
+</div>
+<script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
+          </script><script type="text/javascript">
             try {
               var pageTracker = _gat._getTracker("UA-36088259-4");
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
 
-  </body>
+<p>&nbsp;</p>
+</body>
 </html>
