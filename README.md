@@ -117,4 +117,8 @@ Serializing-Deserializing example
 
 Note: FXSerials uses [Javassist version 3](https://github.com/jboss-javassist/javassist "Javassist on Github")
 
-This software is distributed under the Apache License Version 2.0.
+
+
+![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)
+
+fx-serials by Juffrou is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0).
