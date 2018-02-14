@@ -469,7 +469,7 @@ public class FxSerialsProxyBuilder {
      * corresponding modifications to the above class.
      */
     private static ClassLoader latestUserDefinedLoader() {
-        return sun.misc.VM.latestUserDefinedLoader();
+        return Thread.currentThread().getContextClassLoader();
     }
 
 	private class FieldInfo {
