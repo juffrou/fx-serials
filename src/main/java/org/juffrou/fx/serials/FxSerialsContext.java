@@ -37,6 +37,7 @@ public class FxSerialsContext {
 	/**
 	 * Transforms a traditional Java Bean into a JavaFX2 Bean.
 	 * @param bean a traditional java bean implementing the FXSerials interface.
+	 * @param <T> Type of the bean to proxy
 	 * @return a JavaFX2 Bean
 	 */
 	public <T> T getProxy(T bean) {
@@ -118,6 +119,7 @@ public class FxSerialsContext {
 	/**
 	 * Creates a proxy of beanClass and instantiates it.
 	 * @param beanClass the bean class to proxy
+	 * @param <T> Type of the bean to proxy
 	 * @return new instance of the bean class proxy
 	 */
 	public <T> T getProxy(Class<T> beanClass) {

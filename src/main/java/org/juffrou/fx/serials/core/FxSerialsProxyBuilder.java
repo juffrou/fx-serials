@@ -218,9 +218,9 @@ public class FxSerialsProxyBuilder {
 	/**
 	 * Find the setter method of one property.
 	 * 
-	 * @param beanClass
-	 * @param fieldName
-	 * @param fieldClass
+	 * @param beanClass Class holding the property
+	 * @param fieldName Property name
+	 * @param fieldClass Property type
 	 * @return
 	 */
 	private String inspectWriteMethod(Class<?> beanClass, String fieldName, Class<?> fieldClass) {
@@ -258,9 +258,10 @@ public class FxSerialsProxyBuilder {
 	 *            class to proxy
 	 * @param svUID
 	 *            serialVersionUID field value of the class to proxy
+	 * @param <T>
+	 *            Class to be proxied
 	 * @return the proxy class.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> Class<? extends T> buildFXSerialsProxy(Class<T> fxSerials, long svUID) {
 
 		try {
@@ -339,8 +340,8 @@ public class FxSerialsProxyBuilder {
 	/**
 	 * Returns the class that originated the FxSerialsProxy passed
 	 * 
-	 * @param fxSerialsProxyClass
-	 * @return
+	 * @param fxSerialsProxyClass An FX SerialsProxy class
+	 * @return Class that originated the FxSerialsProxy
 	 */
 	public Class<?> cleanFXSerialsProxy(Class<?> fxSerialsProxyClass) {
 
@@ -357,8 +358,8 @@ public class FxSerialsProxyBuilder {
 	/**
 	 * Returns the class that originated the FxSerialsProxy passed
 	 * 
-	 * @param fxSerialsProxyClassName
-	 * @return
+	 * @param fxSerialsProxyClassName An FX SerialsProxy class name
+	 * @return Class that originated the FxSerialsProxy
 	 */
 	public Class<?> cleanFXSerialsProxy(String fxSerialsProxyClassName) {
 
@@ -382,7 +383,7 @@ public class FxSerialsProxyBuilder {
 	 * Adds the methods defined in the interface FxSerialsProxy and adds the
 	 * implements declaration
 	 * 
-	 * @param ctClass
+	 * @param ctClass Class to be changed
 	 * @throws CannotCompileException
 	 * @throws NotFoundException
 	 */
