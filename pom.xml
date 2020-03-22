@@ -3,7 +3,7 @@
 
 	<groupId>io.github.juffrou</groupId>
 	<artifactId>fx-serials</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.4</version>
 	<name>FXSerials</name>
 	<description>Automagical JavaFX2 Beans</description>
 	<url>http://juffrou.github.io/fx-serials</url>
@@ -51,7 +51,7 @@
 		<connection>scm:git:https://github.com/juffrou/fx-serials.git</connection>
 		<developerConnection>scm:git:https://github.com/juffrou/fx-serials.git</developerConnection>
 		<url>https://github.com/juffrou/fx-serials.git</url>
-	  <tag>HEAD</tag>
+	  <tag>fx-serials-1.0.4</tag>
   </scm>
 
 	<issueManagement>
